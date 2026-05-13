@@ -1,8 +1,8 @@
 """
-Gemini API advisor for Slay the Spire with RAG.
+Gemini API advisor for Slay the Spire with RAG and persistent run storage.
 
-Uses local database for accurate card/relic info and injects
-full run context with every message.
+Uses local database for accurate card/relic info, persistent run storage,
+and injects full run context with every message.
 """
 
 import os
@@ -17,13 +17,15 @@ from difflib import SequenceMatcher
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-# Suppress deprecation warning for now (google.generativeai still works)
+# Suppress deprecation warning
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning, module="google.generativeai")
 
 import google.generativeai as genai
 from dotenv import load_dotenv
 from loguru import logger
+
+from src.advisor.run_manager import RunManager, format_deck_counts
 
 
 class KnowledgeBase:
@@ -44,10 +46,9 @@ class KnowledgeBase:
         if cards_file.exists():
             with open(cards_file, encoding="utf-8") as f:
                 cards_list = json.load(f)
-                # Index by lowercase name for fast lookup
                 for card in cards_list:
                     name = card.get("name", "").lower()
-                    if name and not name.endswith("+"):  # Skip upgraded versions for search
+                    if name and not name.endswith("+"):
                         self.cards[name] = card
             logger.info(f"Loaded {len(self.cards)} cards")
         
@@ -72,17 +73,6 @@ class KnowledgeBase:
                     if name:
                         self.potions[name] = potion
             logger.info(f"Loaded {len(self.potions)} potions")
-        
-        # Load keywords
-        keywords_file = self.data_dir / "keywords.json"
-        if keywords_file.exists():
-            with open(keywords_file, encoding="utf-8") as f:
-                keywords_list = json.load(f)
-                for kw in keywords_list:
-                    name = kw.get("name", "").lower()
-                    if name:
-                        self.keywords[name] = kw
-            logger.info(f"Loaded {len(self.keywords)} keywords")
     
     def _fuzzy_match(self, query: str, candidates: dict, threshold: float = 0.6) -> list:
         """Find fuzzy matches for a query in candidates."""
@@ -90,81 +80,48 @@ class KnowledgeBase:
         matches = []
         
         for name, data in candidates.items():
-            # Exact match
             if query == name:
                 matches.append((1.0, name, data))
-                continue
-            
-            # Partial match (query is substring of name)
-            if query in name:
+            elif query in name:
                 matches.append((0.9, name, data))
-                continue
-            
-            # Fuzzy match
-            ratio = SequenceMatcher(None, query, name).ratio()
-            if ratio >= threshold:
-                matches.append((ratio, name, data))
+            else:
+                ratio = SequenceMatcher(None, query, name).ratio()
+                if ratio >= threshold:
+                    matches.append((ratio, name, data))
         
-        # Sort by match score descending
         matches.sort(key=lambda x: x[0], reverse=True)
-        return matches[:3]  # Return top 3 matches
+        return matches[:3]
     
     def find_cards(self, query: str) -> list:
-        """Find cards matching the query."""
         return self._fuzzy_match(query, self.cards)
     
     def find_relics(self, query: str) -> list:
-        """Find relics matching the query."""
         return self._fuzzy_match(query, self.relics)
     
-    def find_potions(self, query: str) -> list:
-        """Find potions matching the query."""
-        return self._fuzzy_match(query, self.potions)
-    
     def get_card_info(self, name: str) -> Optional[str]:
-        """Get formatted card info."""
         matches = self.find_cards(name)
         if not matches:
             return None
         _, _, card = matches[0]
-        
-        # Also get upgraded version if exists
-        upgraded_name = card["name"].lower() + "+"
-        upgraded = self.cards.get(upgraded_name.replace("+", "").lower())
-        
-        info = f"📜 {card['name']} ({card.get('color', 'Colorless')}, {card.get('rarity', 'Common')}, {card.get('type', 'Skill')})\n"
-        info += f"   Cost: {card.get('cost', '?')} | {card.get('description', 'No description')}"
-        
-        return info
+        return f"📜 {card['name']} ({card.get('color', 'Colorless')}, {card.get('rarity', 'Common')}, {card.get('type', 'Skill')})\n   Cost: {card.get('cost', '?')} | {card.get('description', 'No description')}"
     
     def get_relic_info(self, name: str) -> Optional[str]:
-        """Get formatted relic info."""
         matches = self.find_relics(name)
         if not matches:
             return None
         _, _, relic = matches[0]
-        
-        info = f"🔮 {relic['name']} ({relic.get('tier', 'Common')})\n"
-        info += f"   {relic.get('description', 'No description')}"
-        
-        return info
+        return f"🔮 {relic['name']} ({relic.get('tier', 'Common')})\n   {relic.get('description', 'No description')}"
     
     def extract_mentioned_items(self, text: str) -> dict:
-        """Extract cards, relics, and potions mentioned in text."""
         text_lower = text.lower()
         found = {"cards": [], "relics": [], "potions": []}
         
-        # Check each card name
         for name in self.cards:
             if name in text_lower:
                 found["cards"].append(name)
-        
-        # Check each relic name
         for name in self.relics:
             if name in text_lower:
                 found["relics"].append(name)
-        
-        # Check each potion name
         for name in self.potions:
             if name in text_lower:
                 found["potions"].append(name)
@@ -172,18 +129,10 @@ class KnowledgeBase:
         return found
 
 
-def format_deck_counts(cards: list) -> str:
-    """Format a deck list with counts (e.g., '5x Strike, 4x Defend, 1x Bash')."""
-    from collections import Counter
-    counts = Counter(cards)
-    parts = [f"{count}x {card}" for card, count in counts.items()]
-    return ", ".join(parts)
-
-
 class GeminiAdvisor:
-    """Slay the Spire advisor powered by Gemini API with RAG."""
+    """Slay the Spire advisor powered by Gemini API with persistent run storage."""
     
-    # Character data (loaded once, shared across instances)
+    # Character data
     CHARACTERS = {
         "ironclad": {
             "name": "Ironclad",
@@ -191,7 +140,8 @@ class GeminiAdvisor:
             "starter_relic": "Burning Blood",
             "starter_relic_desc": "Heal 6 HP after combat",
             "color": "Red",
-            "starter_deck": ["Strike", "Strike", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "Defend", "Bash"]
+            "starter_deck": ["Strike", "Strike", "Strike", "Strike", "Strike", 
+                           "Defend", "Defend", "Defend", "Defend", "Bash"]
         },
         "silent": {
             "name": "Silent",
@@ -199,7 +149,9 @@ class GeminiAdvisor:
             "starter_relic": "Ring of the Snake",
             "starter_relic_desc": "Draw 2 extra cards turn 1",
             "color": "Green",
-            "starter_deck": ["Strike", "Strike", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "Defend", "Defend", "Survivor", "Neutralize"]
+            "starter_deck": ["Strike", "Strike", "Strike", "Strike", "Strike",
+                           "Defend", "Defend", "Defend", "Defend", "Defend",
+                           "Survivor", "Neutralize"]
         },
         "defect": {
             "name": "Defect",
@@ -207,7 +159,9 @@ class GeminiAdvisor:
             "starter_relic": "Cracked Core",
             "starter_relic_desc": "Channel 1 Lightning at start of combat",
             "color": "Blue",
-            "starter_deck": ["Strike", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "Defend", "Zap", "Dualcast"]
+            "starter_deck": ["Strike", "Strike", "Strike", "Strike",
+                           "Defend", "Defend", "Defend", "Defend",
+                           "Zap", "Dualcast"]
         },
         "watcher": {
             "name": "Watcher",
@@ -215,25 +169,28 @@ class GeminiAdvisor:
             "starter_relic": "Pure Water",
             "starter_relic_desc": "Add Miracle to hand at start of combat",
             "color": "Purple",
-            "starter_deck": ["Strike", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "Defend", "Eruption", "Vigilance"]
+            "starter_deck": ["Strike", "Strike", "Strike", "Strike",
+                           "Defend", "Defend", "Defend", "Defend",
+                           "Eruption", "Vigilance"]
         }
     }
     
     def __init__(self):
-        # Load environment variables
         load_dotenv()
         
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("GEMINI_API_KEY not found in environment. Add it to .env file.")
+            raise ValueError("GEMINI_API_KEY not found in environment.")
         
         # Load knowledge base
         self.kb = KnowledgeBase()
         
+        # Initialize run manager (persistent storage)
+        self.run_manager = RunManager()
+        
         # Configure Gemini
         genai.configure(api_key=api_key)
         
-        # Use Gemini 2.5 Flash Lite (better free tier availability)
         self.model = genai.GenerativeModel(
             model_name="gemini-2.5-flash-lite",
             generation_config={
@@ -245,83 +202,98 @@ class GeminiAdvisor:
             system_instruction=self._get_system_prompt()
         )
         
-        # Start a chat session for conversation history
+        # Start fresh chat session
         self.chat = self.model.start_chat(history=[])
         
-        # Run tracking (in-memory)
-        self.active_run = None
+        # Try to resume latest active run
+        resumed_run = self.run_manager.resume_latest_run()
+        if resumed_run:
+            # Inform Gemini about the resumed run
+            self._send_run_context_to_gemini(resumed_run, resumed=True)
         
-        logger.info(f"Gemini Advisor initialized (KB: {len(self.kb.cards)} cards, {len(self.kb.relics)} relics)")
+        logger.info(f"Advisor initialized (KB: {len(self.kb.cards)} cards, {len(self.kb.relics)} relics)")
     
     def _get_system_prompt(self) -> str:
-        """Get the system prompt for the advisor."""
-        return """You are an expert Slay the Spire advisor. You help players make strategic decisions during their runs.
+        return """You are an expert Slay the Spire advisor helping a player during their run.
 
-CORE KNOWLEDGE:
+CRITICAL RULES:
+1. ONLY use information from [RUN STATE] - never make up or assume deck contents
+2. If no [RUN STATE] is provided, there is NO active run
+3. The deck shown in [RUN STATE] is the COMPLETE and ACCURATE deck
+4. Do NOT invent cards, relics, or events that aren't explicitly stated
+
+GAME KNOWLEDGE:
 - 4 characters: Ironclad (80HP), Silent (70HP), Defect (75HP), Watcher (72HP)
-- Ascension reduces max HP by 4 at A14 and additional 10% at A10
-- Three acts with bosses: Act 1 (Slime Boss/Hexaghost/Guardian), Act 2 (Champ/Collector/Automaton), Act 3 (Awakened/Time Eater/Donu & Deca)
-- Optional Act 4 with the Heart requires 3 keys
-
-STRATEGY PRINCIPLES:
-- Early game: prioritize damage and front-loaded solutions
-- Scale before Act 2 boss fights
-- Deck quality > deck size (remove cards when possible)
-- Elites are high risk/reward - take them when healthy
-
-WHEN I PROVIDE CONTEXT:
-- [RUN STATE] shows the player's current run details - use this for advice
-- [CARD INFO] shows accurate card data from the database
-- [RELIC INFO] shows accurate relic data from the database
-Trust the provided data over your general knowledge when there's a conflict.
+- Ascension reduces max HP: -4 at A14, additional -10% at A10
+- Act 1: Floors 1-17, Act 2: Floors 18-34, Act 3: Floors 35-51, Act 4: 52+
+- Each act has a boss at the end
 
 RESPONSE STYLE:
-- Keep responses BRIEF (2-3 sentences) since they're spoken aloud
+- Keep responses BRIEF (2-3 sentences) - they're spoken aloud
 - Be conversational, not robotic
-- Give specific, actionable advice
-- Reference the player's actual deck/relics when relevant
-- When mentioning deck contents, use counts like '5 Strikes' not 'Strike, Strike, Strike...'"""
+- Use card counts like "5 Strikes" not "Strike, Strike, Strike..."
+- Give specific, actionable advice based on ACTUAL deck state
 
+When I provide [CARD INFO] or [RELIC INFO], that data is accurate - trust it over your memory."""
+    
+    def _send_run_context_to_gemini(self, run: dict, resumed: bool = False):
+        """Send run context to Gemini to establish state."""
+        deck = self.run_manager.get_full_deck(run)
+        deck_str = format_deck_counts(deck)
+        
+        action = "RESUMED" if resumed else "STARTED"
+        
+        context = f"""[RUN {action}]
+Character: {run['character']} | Ascension: {run['ascension']}
+Act: {run['act']} | Floor: {run['floor']}
+HP: {run['hp']}/{run['max_hp']} | Gold: {run['gold']}
+Deck ({len(deck)} cards): {deck_str}
+Relics: {', '.join(run['relics'])}
+Potions: {', '.join(run['potions']) if run['potions'] else 'None'}
+
+Acknowledge briefly."""
+        
+        try:
+            self.chat.send_message(context)
+        except Exception as e:
+            logger.error(f"Failed to send run context: {e}")
+    
     def _build_run_context(self) -> str:
         """Build detailed run context string."""
-        if not self.active_run:
-            return ""
+        run = self.run_manager.get_active_run()
+        if not run:
+            return "[NO ACTIVE RUN - Start one by saying 'start a new run with [character]']"
         
-        r = self.active_run
+        deck = self.run_manager.get_full_deck(run)
+        deck_str = format_deck_counts(deck)
         
-        # Build full deck (starter + added)
-        starter = r.get("starter_deck", [])
-        added = r.get("cards", [])
-        full_deck = starter + added
-        deck_summary = format_deck_counts(full_deck) + f" ({len(full_deck)} total)"
+        context = f"""[RUN STATE - THIS IS THE ONLY SOURCE OF TRUTH]
+Character: {run['character']} | Ascension: {run['ascension']}
+Act: {run['act']} | Floor: {run['floor']}
+HP: {run['hp']}/{run['max_hp']} | Gold: {run['gold']}
+Deck ({len(deck)} cards): {deck_str}
+Relics: {', '.join(run['relics'])}
+Potions: {', '.join(run['potions']) if run['potions'] else 'None'}
+Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emerald'] else ''}{'Sapphire' if run['keys']['sapphire'] else 'None collected'}"""
         
-        # Build relic list
-        relics = r.get("relics", [])
-        relics_str = ", ".join(relics) if relics else "None"
+        # Add recent events for context
+        recent_events = self.run_manager.get_recent_events(run, count=3)
+        if recent_events:
+            events_str = " | ".join([f"F{e['floor']}: {e['details']}" for e in recent_events])
+            context += f"\nRecent: {events_str}"
         
-        context = f"""[RUN STATE]
-Character: {r['character']} | Ascension: {r['ascension']}
-Floor: {r.get('floor', 1)} | HP: {r.get('hp', r.get('max_hp', '?'))}/{r.get('max_hp', '?')}
-Gold: {r.get('gold', 99)} | Potions: {len(r.get('potions', []))}
-Deck: {deck_summary}
-Relics: {relics_str}
-"""
         return context
     
     def _build_rag_context(self, message: str) -> str:
         """Build RAG context by looking up mentioned cards/relics."""
         context_parts = []
-        
-        # Find mentioned items
         found = self.kb.extract_mentioned_items(message)
         
-        # Add card info
-        for card_name in found["cards"][:3]:  # Limit to 3 to avoid token bloat
+        for card_name in found["cards"][:3]:
             info = self.kb.get_card_info(card_name)
             if info:
                 context_parts.append(f"[CARD INFO]\n{info}")
         
-        # Add relic info
         for relic_name in found["relics"][:3]:
             info = self.kb.get_relic_info(relic_name)
             if info:
@@ -332,28 +304,22 @@ Relics: {relics_str}
     def chat_message(self, message: str) -> str:
         """Send a message and get a response with full context."""
         try:
-            # Build full context
             context_parts = []
             
-            # Add run state if active
+            # ALWAYS add run state first
             run_context = self._build_run_context()
-            if run_context:
-                context_parts.append(run_context)
+            context_parts.append(run_context)
             
-            # Add RAG context (card/relic lookups)
+            # Add RAG context for mentioned cards/relics
             rag_context = self._build_rag_context(message)
             if rag_context:
                 context_parts.append(rag_context)
             
             # Combine context with message
-            if context_parts:
-                full_message = "\n".join(context_parts) + "\n\nPlayer: " + message
-            else:
-                full_message = message
+            full_message = "\n\n".join(context_parts) + "\n\nPlayer: " + message
             
-            logger.debug(f"Sending to Gemini:\n{full_message[:500]}...")
+            logger.debug(f"Sending to Gemini:\n{full_message[:800]}...")
             
-            # Get response from Gemini
             response = self.chat.send_message(full_message)
             return response.text.strip()
             
@@ -362,10 +328,14 @@ Relics: {relics_str}
             return f"Sorry, I encountered an error: {str(e)}"
     
     def start_run(self, character: str, ascension: int = 0) -> str:
-        """Start tracking a new run."""
+        """Start a new run."""
         character = character.lower()
         if character not in self.CHARACTERS:
             return f"Unknown character: {character}. Choose Ironclad, Silent, Defect, or Watcher."
+        
+        # End any active run first
+        if self.run_manager.get_active_run():
+            self.run_manager.end_run(victory=False, cause="Abandoned for new run")
         
         char_data = self.CHARACTERS[character]
         
@@ -376,165 +346,157 @@ Relics: {relics_str}
         if ascension >= 10:
             max_hp = int(max_hp * 0.9)
         
-        self.active_run = {
-            "character": char_data["name"],
-            "color": char_data["color"],
-            "ascension": ascension,
-            "floor": 1,
-            "hp": max_hp,
-            "max_hp": max_hp,
-            "gold": 99,
-            "cards": [],  # Non-starter cards only
-            "relics": [char_data["starter_relic"]],
-            "potions": [],
-            "starter_deck": char_data["starter_deck"].copy(),
-        }
+        # Create persistent run
+        run = self.run_manager.create_run(
+            character=char_data["name"],
+            ascension=ascension,
+            starter_deck=char_data["starter_deck"].copy(),
+            starter_relic=char_data["starter_relic"],
+            max_hp=max_hp,
+            color=char_data["color"]
+        )
         
-        # Notify Gemini about the new run
-        starter_deck_str = format_deck_counts(char_data['starter_deck'])
-        context = f"""[NEW RUN STARTED]
-Character: {char_data['name']} (Ascension {ascension})
-Starting HP: {max_hp}
-Starter Relic: {char_data['starter_relic']} - {char_data['starter_relic_desc']}
-Starter Deck: {starter_deck_str}
-
-Please acknowledge the new run briefly."""
+        # Reset chat and inform Gemini
+        self.chat = self.model.start_chat(history=[])
+        self._send_run_context_to_gemini(run, resumed=False)
         
-        self.chat.send_message(context)
-        
-        logger.info(f"Started new run: {char_data['name']} A{ascension}")
-        return f"New run started! {char_data['name']} Ascension {ascension}. HP: {max_hp}. Good luck!"
+        deck_str = format_deck_counts(char_data["starter_deck"])
+        return f"New run started! {char_data['name']} Ascension {ascension}. HP: {max_hp}. Deck: {deck_str}. Good luck!"
     
     def add_card(self, card_name: str) -> str:
-        """Add a card to the current run's deck."""
-        if not self.active_run:
+        """Add a card to the current run."""
+        if not self.run_manager.get_active_run():
             return "No active run. Start one first!"
         
-        # Try to find the card in our database
+        # Find card in database
         matches = self.kb.find_cards(card_name)
-        if matches:
-            _, matched_name, card_data = matches[0]
-            actual_name = card_data["name"]
-        else:
-            actual_name = card_name.title()
+        actual_name = matches[0][2]["name"] if matches else card_name.title()
         
-        self.active_run["cards"].append(actual_name)
-        logger.info(f"Added card: {actual_name}")
+        run = self.run_manager.add_card(actual_name)
+        if run:
+            deck = self.run_manager.get_full_deck(run)
+            return f"Added {actual_name}. Deck now has {len(deck)} cards."
+        return "Failed to add card."
+    
+    def remove_card(self, card_name: str) -> str:
+        """Remove a card from the current run."""
+        if not self.run_manager.get_active_run():
+            return "No active run."
         
-        return f"Added {actual_name} to deck. Deck now has {len(self.active_run['cards'])} non-starter cards."
+        matches = self.kb.find_cards(card_name)
+        actual_name = matches[0][2]["name"] if matches else card_name.title()
+        
+        run = self.run_manager.remove_card(actual_name)
+        if run:
+            deck = self.run_manager.get_full_deck(run)
+            return f"Removed {actual_name}. Deck now has {len(deck)} cards."
+        return "Failed to remove card."
     
     def add_relic(self, relic_name: str) -> str:
         """Add a relic to the current run."""
-        if not self.active_run:
-            return "No active run. Start one first!"
-        
-        # Try to find the relic in our database
-        matches = self.kb.find_relics(relic_name)
-        if matches:
-            _, matched_name, relic_data = matches[0]
-            actual_name = relic_data["name"]
-        else:
-            actual_name = relic_name.title()
-        
-        self.active_run["relics"].append(actual_name)
-        logger.info(f"Added relic: {actual_name}")
-        
-        return f"Added {actual_name}. You now have {len(self.active_run['relics'])} relics."
-    
-    def update_state(self, floor: int = None, hp: int = None, gold: int = None) -> str:
-        """Update the current run state."""
-        if not self.active_run:
+        if not self.run_manager.get_active_run():
             return "No active run."
         
-        updates = []
-        if floor is not None:
-            self.active_run["floor"] = floor
-            updates.append(f"Floor {floor}")
-        if hp is not None:
-            self.active_run["hp"] = hp
-            updates.append(f"HP {hp}")
-        if gold is not None:
-            self.active_run["gold"] = gold
-            updates.append(f"Gold {gold}")
+        matches = self.kb.find_relics(relic_name)
+        actual_name = matches[0][2]["name"] if matches else relic_name.title()
         
-        if updates:
-            return f"Updated: {', '.join(updates)}"
-        return "No changes made."
+        run = self.run_manager.add_relic(actual_name)
+        if run:
+            return f"Added {actual_name}. You have {len(run['relics'])} relics."
+        return "Failed to add relic."
+    
+    def update_floor(self, floor: int) -> str:
+        """Update current floor."""
+        run = self.run_manager.advance_floor(floor)
+        if run:
+            return f"Now on Floor {run['floor']}, Act {run['act']}."
+        return "No active run."
+    
+    def update_hp(self, current: int, max_hp: int = None) -> str:
+        """Update HP."""
+        updates = {"hp": current}
+        if max_hp:
+            updates["max_hp"] = max_hp
+        
+        run = self.run_manager.update_run(**updates)
+        if run:
+            return f"HP: {run['hp']}/{run['max_hp']}"
+        return "No active run."
+    
+    def update_gold(self, gold: int) -> str:
+        """Update gold."""
+        run = self.run_manager.update_run(gold=gold)
+        if run:
+            return f"Gold: {run['gold']}"
+        return "No active run."
     
     def get_run_status(self) -> str:
-        """Get current run status as natural speech."""
-        if not self.active_run:
+        """Get current run status."""
+        run = self.run_manager.get_active_run()
+        if not run:
             return "No active run. Say 'start a new run' to begin!"
         
-        r = self.active_run
-        deck_count = len(r["cards"])
-        relic_count = len(r["relics"])
+        deck = self.run_manager.get_full_deck(run)
         
-        status = f"Playing {r['character']} Ascension {r['ascension']}. "
-        status += f"Floor {r.get('floor', 1)}, HP {r.get('hp')}/{r.get('max_hp')}, {r.get('gold', 99)} gold. "
-        status += f"Deck has {deck_count} added cards, {relic_count} relics."
-        
-        return status
+        return (f"Playing {run['character']} Ascension {run['ascension']}. "
+                f"Act {run['act']}, Floor {run['floor']}. "
+                f"HP {run['hp']}/{run['max_hp']}, {run['gold']} gold. "
+                f"Deck has {len(deck)} cards, {len(run['relics'])} relics.")
     
-    def end_run(self, victory: bool = False) -> str:
+    def end_run(self, victory: bool = False, cause: str = None) -> str:
         """End the current run."""
-        if not self.active_run:
+        run = self.run_manager.get_active_run()
+        if not run:
             return "No active run to end."
         
-        char = self.active_run["character"]
-        asc = self.active_run["ascension"]
-        floor = self.active_run.get("floor", 1)
+        char = run["character"]
+        asc = run["ascension"]
+        floor = run["floor"]
+        
+        self.run_manager.end_run(victory=victory, cause=cause)
         
         result = "Victory!" if victory else f"Defeated on floor {floor}."
-        self.active_run = None
-        
         return f"Run ended. {char} A{asc}. {result}"
     
     def lookup_card(self, card_name: str) -> str:
-        """Look up card information."""
+        """Look up card info."""
         info = self.kb.get_card_info(card_name)
-        if info:
-            return info
-        return f"Card '{card_name}' not found in database."
+        return info or f"Card '{card_name}' not found."
     
     def lookup_relic(self, relic_name: str) -> str:
-        """Look up relic information."""
+        """Look up relic info."""
         info = self.kb.get_relic_info(relic_name)
-        if info:
-            return info
-        return f"Relic '{relic_name}' not found in database."
+        return info or f"Relic '{relic_name}' not found."
 
 
 if __name__ == "__main__":
-    print("Testing Gemini Advisor with RAG...")
+    print("Testing Gemini Advisor with Persistent Storage...")
     print("-" * 50)
     
     try:
         advisor = GeminiAdvisor()
         
-        # Test card lookup
-        print("\n📜 Card Lookup Test:")
-        print(advisor.lookup_card("noxious fumes"))
-        print(advisor.lookup_card("bash"))
-        
-        # Test run tracking
-        print("\n🎮 Starting Run:")
-        print(advisor.start_run("Silent", 5))
+        # Check if there's an existing run
+        run = advisor.run_manager.get_active_run()
+        if run:
+            print(f"\n📂 Resumed existing run: {run['character']} A{run['ascension']}")
+            print(f"   Floor {run['floor']}, HP {run['hp']}/{run['max_hp']}")
+        else:
+            print("\n🆕 Starting fresh run...")
+            print(advisor.start_run("Silent", 5))
         
         print("\n📊 Run Status:")
         print(advisor.get_run_status())
         
-        # Test chat with RAG
-        print("\n💬 Chat with RAG (mentions Noxious Fumes):")
-        response = advisor.chat_message("I just got offered Noxious Fumes, Blade Dance, and Backstab. Which should I pick?")
+        print("\n💬 Asking about deck:")
+        response = advisor.chat_message("What cards are in my starting deck?")
         print(f"Response: {response}")
         
-        # Add card and ask follow-up
-        print("\n➕ Adding card:")
+        print("\n➕ Adding Noxious Fumes:")
         print(advisor.add_card("noxious fumes"))
         
-        print("\n💬 Follow-up question:")
-        response = advisor.chat_message("Now I see Footwork and Catalyst. What synergizes with my poison build?")
+        print("\n💬 Asking about synergy:")
+        response = advisor.chat_message("Should I take Catalyst next?")
         print(f"Response: {response}")
         
     except Exception as e:

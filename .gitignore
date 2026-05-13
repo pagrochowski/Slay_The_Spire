@@ -43,6 +43,9 @@ env/
 # Database files (keep .gitkeep)
 db/*.db
 
+# Run data (user-specific)
+data/runs.json
+
 # Logs
 logs/
 *.log
