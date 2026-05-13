@@ -1,0 +1,485 @@
+{
+  "name": "sts_advisor",
+  "description": "Slay the Spire game advisor tools for querying game data and tracking runs",
+  "version": "1.0.0",
+  "functions": [
+    {
+      "name": "get_card",
+      "description": "Look up a card by name. Returns card details including cost, type, rarity, description, and any strategic notes.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The card name to look up (e.g., 'Bash', 'Wraith Form+')"
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "get_cards_by_character",
+      "description": "Get all cards for a specific character.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "character": {
+            "type": "string",
+            "enum": ["IRONCLAD", "SILENT", "DEFECT", "WATCHER", "COLORLESS"],
+            "description": "Character whose cards to retrieve"
+          }
+        },
+        "required": ["character"]
+      }
+    },
+    {
+      "name": "get_relic",
+      "description": "Look up a relic by name. Returns relic details including description, rarity, and pool.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The relic name to look up"
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "get_enemy",
+      "description": "Look up an enemy by name. Returns enemy details including type, HP, and strategy notes.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The enemy name to look up"
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "get_enemies_by_type",
+      "description": "Get all enemies of a specific type.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "enemy_type": {
+            "type": "string",
+            "enum": ["NORMAL", "ELITE", "BOSS", "MINION"],
+            "description": "Type of enemies to retrieve"
+          }
+        },
+        "required": ["enemy_type"]
+      }
+    },
+    {
+      "name": "get_potion",
+      "description": "Look up a potion by name.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The potion name to look up"
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "get_keyword",
+      "description": "Look up a game keyword/mechanic definition (e.g., Vulnerable, Weak, Intangible).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The keyword to look up"
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "get_ascension_info",
+      "description": "Get information about a specific ascension level's modifiers.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "description": "Ascension level (1-20)"
+          }
+        },
+        "required": ["level"]
+      }
+    },
+    {
+      "name": "create_run",
+      "description": "Start tracking a new run. Creates run with starter deck and relic, applies ascension modifiers.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "character": {
+            "type": "string",
+            "enum": ["IRONCLAD", "SILENT", "DEFECT", "WATCHER"],
+            "description": "Character for this run"
+          },
+          "ascension_level": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20,
+            "default": 0,
+            "description": "Ascension level (0-20)"
+          },
+          "run_id": {
+            "type": "string",
+            "description": "Optional external identifier for the run"
+          }
+        },
+        "required": ["character"]
+      }
+    },
+    {
+      "name": "get_run",
+      "description": "Get the current state of an active run.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID to retrieve"
+          }
+        },
+        "required": ["run_id"]
+      }
+    },
+    {
+      "name": "get_run_summary",
+      "description": "Get a comprehensive summary of a run including deck, relics, and stats.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID to summarize"
+          }
+        },
+        "required": ["run_id"]
+      }
+    },
+    {
+      "name": "update_run_state",
+      "description": "Update the current state of a run (floor, HP, gold, act, potions).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID to update"
+          },
+          "floor": {
+            "type": "integer",
+            "description": "Current floor number"
+          },
+          "hp": {
+            "type": "integer",
+            "description": "Current HP"
+          },
+          "max_hp": {
+            "type": "integer",
+            "description": "Maximum HP"
+          },
+          "gold": {
+            "type": "integer",
+            "description": "Current gold"
+          },
+          "act": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4,
+            "description": "Current act (1-4)"
+          },
+          "potions": {
+            "type": "string",
+            "description": "JSON array of potion names currently held"
+          }
+        },
+        "required": ["run_id"]
+      }
+    },
+    {
+      "name": "add_card_to_run",
+      "description": "Add a card to the run's deck.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID"
+          },
+          "card_name": {
+            "type": "string",
+            "description": "Name of the card to add"
+          },
+          "floor": {
+            "type": "integer",
+            "description": "Floor where card was obtained"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["combat_reward", "shop", "event", "boss_reward", "starter", "transform", "other"],
+            "description": "How the card was obtained"
+          },
+          "upgraded": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether the card is upgraded"
+          }
+        },
+        "required": ["run_id", "card_name"]
+      }
+    },
+    {
+      "name": "remove_card_from_run",
+      "description": "Remove a card from the run's deck (e.g., at shop or event).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_card_id": {
+            "type": "integer",
+            "description": "The run_card ID to remove"
+          }
+        },
+        "required": ["run_card_id"]
+      }
+    },
+    {
+      "name": "upgrade_card_in_run",
+      "description": "Upgrade a card in the run's deck.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_card_id": {
+            "type": "integer",
+            "description": "The run_card ID to upgrade"
+          }
+        },
+        "required": ["run_card_id"]
+      }
+    },
+    {
+      "name": "get_deck",
+      "description": "Get all cards in a run's deck.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID"
+          }
+        },
+        "required": ["run_id"]
+      }
+    },
+    {
+      "name": "add_relic_to_run",
+      "description": "Add a relic to the run.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID"
+          },
+          "relic_name": {
+            "type": "string",
+            "description": "Name of the relic"
+          },
+          "floor": {
+            "type": "integer",
+            "description": "Floor where relic was obtained"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["starter", "boss", "elite", "shop", "event", "treasure", "other"],
+            "description": "How the relic was obtained"
+          }
+        },
+        "required": ["run_id", "relic_name"]
+      }
+    },
+    {
+      "name": "get_relics",
+      "description": "Get all relics in a run.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID"
+          }
+        },
+        "required": ["run_id"]
+      }
+    },
+    {
+      "name": "log_combat",
+      "description": "Log a combat encounter with results.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID"
+          },
+          "floor": {
+            "type": "integer",
+            "description": "Floor number of the combat"
+          },
+          "combat_type": {
+            "type": "string",
+            "enum": ["COMBAT", "ELITE", "BOSS"],
+            "description": "Type of combat"
+          },
+          "enemy_name": {
+            "type": "string",
+            "description": "Name of enemy/enemies fought"
+          },
+          "hp_before": {
+            "type": "integer",
+            "description": "HP before combat"
+          },
+          "hp_after": {
+            "type": "integer",
+            "description": "HP after combat"
+          },
+          "damage_dealt": {
+            "type": "integer",
+            "description": "Total damage dealt"
+          },
+          "damage_taken": {
+            "type": "integer",
+            "description": "Total damage taken"
+          },
+          "turns_taken": {
+            "type": "integer",
+            "description": "Number of turns the combat lasted"
+          }
+        },
+        "required": ["run_id", "floor", "combat_type", "enemy_name"]
+      }
+    },
+    {
+      "name": "log_event",
+      "description": "Log a non-combat event (shop, rest, event, card reward choice).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID"
+          },
+          "floor": {
+            "type": "integer",
+            "description": "Floor number"
+          },
+          "event_type": {
+            "type": "string",
+            "enum": ["SHOP", "REST", "EVENT", "TREASURE", "CARD_REWARD", "BOSS_RELIC"],
+            "description": "Type of event"
+          },
+          "event_name": {
+            "type": "string",
+            "description": "Name of the event if applicable"
+          },
+          "decision": {
+            "type": "string",
+            "description": "What choice was made"
+          },
+          "alternatives": {
+            "type": "string",
+            "description": "JSON array of other options that weren't chosen"
+          },
+          "hp_before": {
+            "type": "integer",
+            "description": "HP before event"
+          },
+          "hp_after": {
+            "type": "integer",
+            "description": "HP after event"
+          },
+          "gold_before": {
+            "type": "integer",
+            "description": "Gold before event"
+          },
+          "gold_after": {
+            "type": "integer",
+            "description": "Gold after event"
+          }
+        },
+        "required": ["run_id", "floor", "event_type"]
+      }
+    },
+    {
+      "name": "collect_key",
+      "description": "Record collecting a key for Act 4.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID"
+          },
+          "key_type": {
+            "type": "string",
+            "enum": ["ruby", "emerald", "sapphire"],
+            "description": "Which key was collected"
+          }
+        },
+        "required": ["run_id", "key_type"]
+      }
+    },
+    {
+      "name": "end_run",
+      "description": "Mark a run as completed (victory or defeat).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID"
+          },
+          "victory": {
+            "type": "boolean",
+            "description": "Whether the run was a victory"
+          },
+          "killed_by": {
+            "type": "string",
+            "description": "Enemy name if defeated (optional)"
+          }
+        },
+        "required": ["run_id", "victory"]
+      }
+    },
+    {
+      "name": "get_run_events",
+      "description": "Get the event history for a run.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "description": "The run ID"
+          }
+        },
+        "required": ["run_id"]
+      }
+    }
+  ]
+}
