@@ -1,0 +1,30 @@
+The Slime Boss is one of the three bosses encountered at the end of Act 1.
+Will always go through the pattern of Goop Spray, Preparing, Slam, and then repeat.
+
+Split occurs when its HP is at 50% or below.
+
+HP
+140
+150 Ascension 9+
+
+In Party With
+None
+Debut Act
+Act 1
+Powers
+Split
+
+Name	Intent	Effect
+Goop Spray	Debuff2	Shuffles 3 Slimed to your discard pile.
+Shuffles 5 Ascension Icon19+ Slimed to your discard pile.
+Preparing	Intent - Unknown	Nothing.
+Slam	Intent - Attack - Sickle	Deals 35 damage.
+Deals 38 Ascension Icon4+ damage.
+Split	Intent - Unknown	Splits into an Acid Slime (L) and a Spike Slime (L)
+with current HP. Interrupts previous intents.
+
+Tips
+Slam hits for quite a bit of damage, so try and force him to split by his 3rd turn by dealing 70+ total damage, or use Icon Weak Weak and/or a lot of Icon Block Block.
+Since the slimes left after split have health equal the boss's, it's a good idea to try to get it as far below half health as you can in one turn, so the new slimes have less health and are easier to deal with. The same strategy applies to the smaller slimes when they split.
+Trivia
+The name “Slime Boss” is a parody of “Crime Boss” due to the fact that this boss has a Mafia-style hat and also splits into other slimes, a reference to the elusive and neverending nature of mob families.

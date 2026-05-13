@@ -2,8 +2,8 @@
 Advisor module for Slay the Spire.
 """
 
-from .ollama_advisor import STSAdvisor
-from .gemini_advisor import GeminiAdvisor
+from .groq_advisor import GroqAdvisor
 from .run_manager import RunManager
+from .command_parser import CommandParser
 
-__all__ = ["STSAdvisor", "GeminiAdvisor", "RunManager"]
+__all__ = ["GroqAdvisor", "RunManager", "CommandParser"]

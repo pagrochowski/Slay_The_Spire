@@ -1,0 +1,25 @@
+Bosses are incredibly difficult monsters that are encountered at the end of each Act. Compared to both normal monsters and elites, bosses typically sport a much higher health pool, much more damaging attacks, and utilize special gimmicks that either heavily cripple the player's deck or considerably buff themselves. Every boss has a unique portrait visible at the top of the Spire map, which can help plan a deck accordingly. The preceding map location will always be a Rest Site, allowing the player to heal before the fight; the only exception to this is the Corrupt Heart in Act 4 which always has a special elite encounter before it.
+
+One boss is fought at the end of each Act. To advance to the next Act, the boss must successfully be defeated. At the end of Act 3, two bosses are fought in a row at Ascension 20.
+
+Upon defeating the Act 1 and Act 2 bosses, the player is rewarded with gold, a choice between three rare cards, a choice between three boss relics, and occasionally, a random potion. The Act 3 and Act 4 bosses do not award the player any consumables or cards. The player is also healed to full health (75% of missing health starting at Ascension 5) at the end of every boss battle.
+
+Slaying a boss will add 50 points to a run's score. Slaying a boss without taking damage, not including self-damaging cards such as Offering, adds an additional 50 points. Slaying all three bosses without taking any damage adds 200 points and overrides any previous flawlessness bonus.
+
+Some relics will activate during boss fights:
+
+Pantograph Pantograph will heal the player for 25 HP at the start of each boss combat.
+SlaversCollar Slaver's Collar will give the player an additional Energy at the start of their turn.
+Conversely, relics such as the WingedGreaves Wing Boots cannot be used to skip boss fights, as all paths in an Act lead to the floor that contains the boss.
+
+During the Mind Bloom Event in Act 3, choosing the [I Am War] option starts a fight with a random Act 1 boss for a random rare relic. This boss fight does not add towards the run's score, but does activate the Pantograph Pantograph and SlaversCollar Slaver's Collar relics.
+
+The Act 4 boss cannot be fought on the first playthrough of any character minus the Watcher. To fight the Act 4 boss, the player must defeat the Act 3 boss with the Ironclad, the Silent, and the Defect at least once.
+
+One of these bosses will appear on Floor 16.
+Slime Boss
+The Guardian
+Hexaghost
+
+
+

@@ -49,9 +49,10 @@ class VoiceConfig:
     dtype: str = "int16"
     
     # Whisper settings
-    whisper_model: str = "base"  # tiny, base, small, medium, large-v3
-    whisper_device: str = "cuda"  # cuda, cpu, auto
-    whisper_compute_type: str = "float16"  # float16, int8, int8_float16
+    whisper_backend: str = "groq"  # groq (API, better accuracy) or local (faster-whisper)
+    whisper_model: str = "whisper-large-v3-turbo"  # For Groq: whisper-large-v3-turbo, whisper-large-v3
+    whisper_device: str = "cuda"  # cuda, cpu, auto (only for local backend)
+    whisper_compute_type: str = "float16"  # float16, int8, int8_float16 (only for local)
     
     # TTS settings
     tts_engine: str = "pyttsx3"  # pyttsx3, edge-tts
@@ -65,25 +66,59 @@ class VoiceConfig:
 
 
 class SpeechToText:
-    """Speech-to-text using faster-whisper."""
+    """Speech-to-text using Groq API or local faster-whisper."""
     
     def __init__(self, config: VoiceConfig):
         self.config = config
-        self.model = None
+        self.model = None  # For local whisper
+        self.groq_client = None  # For Groq API
         self._initialized = False
     
     def initialize(self) -> bool:
-        """Initialize the Whisper model."""
+        """Initialize the Whisper backend."""
+        if self.config.whisper_backend == "groq":
+            return self._init_groq()
+        else:
+            return self._init_local()
+    
+    def _init_groq(self) -> bool:
+        """Initialize Groq Whisper API."""
+        try:
+            import os
+            from groq import Groq
+            from dotenv import load_dotenv
+            load_dotenv()
+            
+            api_key = os.getenv("GROQ_API_KEY")
+            if not api_key:
+                logger.error("GROQ_API_KEY not found for Whisper API")
+                return False
+            
+            self.groq_client = Groq(api_key=api_key)
+            logger.info(f"Groq Whisper API initialized (model: {self.config.whisper_model})")
+            self._initialized = True
+            return True
+        except ImportError:
+            logger.error("groq not installed. Run: pip install groq")
+            return False
+        except Exception as e:
+            logger.error(f"Failed to initialize Groq Whisper: {e}")
+            return False
+    
+    def _init_local(self) -> bool:
+        """Initialize local faster-whisper model."""
         try:
             from faster_whisper import WhisperModel
             
-            logger.info(f"Loading Whisper model: {self.config.whisper_model}")
+            # Use base model for local
+            local_model = self.config.whisper_model if self.config.whisper_backend == "local" else "base"
+            logger.info(f"Loading local Whisper model: {local_model}")
             
             # Try GPU first, fall back to CPU
             def try_load_model(device: str, compute_type: str) -> WhisperModel:
                 """Load model and test it works."""
                 model = WhisperModel(
-                    self.config.whisper_model,
+                    local_model,
                     device=device,
                     compute_type=compute_type
                 )
@@ -115,11 +150,13 @@ class SpeechToText:
     
     def _reinit_cpu(self):
         """Reinitialize model on CPU after CUDA failure."""
+        if self.config.whisper_backend == "groq":
+            return  # N/A for API
         try:
             from faster_whisper import WhisperModel
             logger.info("Reinitializing Whisper on CPU due to CUDA error...")
             self.model = WhisperModel(
-                self.config.whisper_model,
+                "base",
                 device="cpu",
                 compute_type="int8"
             )
@@ -134,6 +171,52 @@ class SpeechToText:
             logger.error("Whisper not initialized")
             return ""
         
+        if self.config.whisper_backend == "groq":
+            return self._transcribe_groq(audio_data)
+        else:
+            return self._transcribe_local(audio_data)
+    
+    def _transcribe_groq(self, audio_data: np.ndarray) -> str:
+        """Transcribe using Groq Whisper API."""
+        import tempfile
+        
+        try:
+            # Save audio to temp WAV file
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                temp_path = f.name
+            
+            # Write WAV file
+            import wave
+            with wave.open(temp_path, 'wb') as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)  # int16
+                wf.setframerate(self.config.sample_rate)
+                wf.writeframes(audio_data.tobytes())
+            
+            # Send to Groq
+            with open(temp_path, "rb") as audio_file:
+                transcription = self.groq_client.audio.transcriptions.create(
+                    file=(temp_path, audio_file.read()),
+                    model=self.config.whisper_model,
+                    temperature=0,
+                    language="en",
+                    response_format="text",
+                )
+            
+            # Clean up temp file
+            import os
+            os.unlink(temp_path)
+            
+            text = transcription.strip() if isinstance(transcription, str) else transcription.text.strip()
+            logger.debug(f"Transcribed (Groq): {text}")
+            return text
+            
+        except Exception as e:
+            logger.error(f"Groq transcription failed: {e}")
+            return ""
+    
+    def _transcribe_local(self, audio_data: np.ndarray) -> str:
+        """Transcribe using local faster-whisper."""
         try:
             # Convert to float32 for Whisper
             audio_float = audio_data.astype(np.float32) / 32768.0
@@ -147,7 +230,7 @@ class SpeechToText:
             
             # Combine all segments
             text = " ".join(segment.text.strip() for segment in segments)
-            logger.debug(f"Transcribed: {text}")
+            logger.debug(f"Transcribed (local): {text}")
             return text.strip()
             
         except Exception as e:
@@ -158,18 +241,20 @@ class SpeechToText:
                 self._reinit_cpu()
                 # Retry on CPU
                 if self._initialized:
-                    return self.transcribe(audio_data)
+                    return self._transcribe_local(audio_data)
             logger.error(f"Transcription failed: {e}")
             return ""
 
 
 class TextToSpeech:
-    """Text-to-speech output."""
+    """Text-to-speech output with interrupt support."""
     
     def __init__(self, config: VoiceConfig):
         self.config = config
         self.engine = None
         self._initialized = False
+        self._speaking = False
+        self._interrupt_requested = False
     
     def initialize(self) -> bool:
         """Initialize the TTS engine."""
@@ -221,11 +306,33 @@ $synth.Dispose()
             logger.error("edge-tts not installed. Run: pip install edge-tts")
             return False
     
+    def interrupt(self) -> None:
+        """Interrupt any ongoing speech."""
+        if self._speaking:
+            self._interrupt_requested = True
+            logger.info("🔇 Speech interrupted")
+            try:
+                import pygame
+                if pygame.mixer.get_init():
+                    pygame.mixer.music.stop()
+            except Exception:
+                pass  # pygame not available or not initialized
+    
+    def is_speaking(self) -> bool:
+        """Check if currently speaking."""
+        return self._speaking
+    
     def speak(self, text: str) -> None:
         """Speak the given text."""
         if not self._initialized:
             logger.error("TTS not initialized")
             return
+        
+        # Validate text has actual content
+        clean_check = text.replace('.', '').replace('!', '').replace('?', '').strip()
+        if not clean_check or len(clean_check) < 5:
+            logger.warning(f"Response too short to speak: '{text}'")
+            text = "I'm not sure what to say about that."
         
         # Truncate very long responses for TTS (keep first ~500 chars)
         if len(text) > 500:
@@ -284,6 +391,9 @@ $synth.Speak("{clean_text}")
         import tempfile
         import subprocess
         
+        self._speaking = True
+        self._interrupt_requested = False
+        
         async def _generate_and_play():
             try:
                 import edge_tts
@@ -303,34 +413,51 @@ $synth.Speak("{clean_text}")
                 
                 await communicate.save(temp_path)
                 
-                # Play using Windows Media Player (most reliable on Windows)
+                # Check for interrupt after generation
+                if self._interrupt_requested:
+                    Path(temp_path).unlink(missing_ok=True)
+                    return
+                
+                # Wait for file to be fully written
+                await asyncio.sleep(0.1)
+                
+                # Play using pygame or fallback
                 try:
                     # Try pygame first (best quality)
                     import pygame
-                    pygame.mixer.init()
+                    pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
                     pygame.mixer.music.load(temp_path)
                     pygame.mixer.music.play()
-                    while pygame.mixer.music.get_busy():
-                        await asyncio.sleep(0.1)
+                    while pygame.mixer.music.get_busy() and not self._interrupt_requested:
+                        await asyncio.sleep(0.05)  # Faster check for interrupt
+                    pygame.mixer.music.stop()
                     pygame.mixer.quit()
-                except ImportError:
-                    # Fallback to PowerShell media player
-                    ps_cmd = f'''
-$player = New-Object System.Media.SoundPlayer "{temp_path}"
-$player.PlaySync()
-'''
-                    # Use wmplayer for mp3
-                    subprocess.run(
-                        ["powershell", "-Command", f'Start-Process -FilePath "{temp_path}" -Wait'],
-                        capture_output=True,
-                        timeout=60
-                    )
+                except Exception as pygame_error:
+                    logger.warning(f"pygame failed: {pygame_error}, trying playsound")
+                    # Fallback to playsound (more robust for MP3)
+                    try:
+                        from playsound import playsound
+                        playsound(temp_path)
+                    except ImportError:
+                        # Last resort: Windows Media Player via PowerShell
+                        subprocess.run(
+                            ["powershell", "-Command", 
+                             f'Add-Type -AssemblyName presentationCore; '
+                             f'$mediaPlayer = New-Object System.Windows.Media.MediaPlayer; '
+                             f'$mediaPlayer.Open([System.Uri]::new("{temp_path}")); '
+                             f'$mediaPlayer.Play(); '
+                             f'Start-Sleep -Seconds 10'],
+                            capture_output=True,
+                            timeout=60
+                        )
                 
                 logger.debug("Edge TTS finished speaking")
                 Path(temp_path).unlink(missing_ok=True)
                 
             except Exception as e:
                 logger.error(f"edge-tts failed: {e}")
+            finally:
+                self._speaking = False
         
         # Run async function
         try:
@@ -437,6 +564,11 @@ class VoiceInterface:
     
     def _on_key_press(self, key) -> None:
         """Handle key press for push-to-talk."""
+        # Always interrupt TTS when F1 is pressed
+        if self.tts.is_speaking():
+            self.tts.interrupt()
+            return  # Don't start recording if we just interrupted
+        
         if not self._recording:
             self._recording = True
             logger.info("🎤 Recording... (release key to stop)")
@@ -471,7 +603,7 @@ class VoiceInterface:
             else:
                 response = f"You said: {text}"
             
-            logger.info(f"🔊 Responding: {response[:100]}...")
+            logger.info(f"🔊 Responding: {response}")
             
             # Speak response
             self.tts.speak(response)

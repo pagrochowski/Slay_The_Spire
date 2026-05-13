@@ -1,0 +1,152 @@
+The Ironclad is one of four playable characters in Slay the Spire. He wields an arsenal of powerful strikes, boasts formidable defensive options, and draws fiendish strength from his demonic benefactors to empower himself in various ways. He starts off with 80 HP, highest of the playable characters, and can manipulate Exhaust.
+The Ironclad's starting Relic is   Burning Blood, which heals 6 HP after combat.
+Starting Deck
+•	5 Strike
+•	4 Defend
+•	1 Bash
+Relics
+Starting Relic: BurningBlood Burning Blood
+
+Common Relic: RedSkull Red Skull
+
+Uncommon Relics: PaperFrog Paper Phrog, SelfFormingClay Self-Forming Clay
+
+Rare Relics: ChampionBelt Champion Belt, CharonsAshes Charon's Ashes, MagicFlower Magic Flower
+
+Boss Relics: BlackBlood Black Blood (replaces BurningBlood Burning Blood), MarkofPain Mark of Pain, RunicCube Runic Cube
+
+Shop Relic: Brimstone Brimstone
+
+General Build Archetypes
+These are the standard types of decks that may give you an idea of direction for your deck, or what you want to go for. Keep in mind that none of these builds are mutually exclusive. Many of them are more of a general strategy, which can be adapted or combined into multiple builds in a single deck.
+
+Icon Block High Defense Deck
+This strategy focuses on building up Icon Block Block over multiple turns, potentially eliminating incoming damage. Icon PlatedArmor Plated Armor is an excellent fit in this build.
+Essential cards include Body Slam, Entrench, and Barricade.
+Barricade may be substituted by Calipers Calipers, provided that you have a consistent Icon Block Block per turn.
+Keep in mind that Barricade+ costs 2 energy and won't instantly boost your damage/block, so playing it may weaken you on the turn played.
+Body Slam and Juggernaut are excellent sources of damage, which is still important to win.
+Though not an intuitive choice, Second Wind can be used to thin out extraneous Icon Block Block cards once enough Icon Block Block is built up, letting the player more reliably draw attacks and rely on Entrench to maintain their Icon Block Block and be sure to prioritize upgrading it because 2 energy cost is more reasonable for this type of build.
+Although, this can be mitigated with Feel No Pain because it effectively synergies with offering a passive defense build. More importantly many of Ironclad's card exhaust by themselves if not used, so it helps with deck management.
+Icon Strength Strength reduction from Disarm and Icon Weak Weak from Intimidate, Clothesline, and Uppercut can help reduce enemies' attack damage, allowing you to maintain your Icon Block Block.
+Furthermore Shockwave affecting all enemies is a must especially if one gets the ChampionBelt Champion Belt
+Flame Barrier is a must as it is the Ironclad's best defense as it is also a passive offense.
+Any source of Icon Dexterity Dexterity is necessary to maintain any shields especially with the Ironclad having higher defenses then the other characters.
+Having additional sources of energy such as Lantern Lantern, Seeing Red, Bloodletting, and Offering especially when both are upgraded. This is especially true for the later as it also let's you draw more cards to move through your deck faster.
+SelfFormingClay Self-Forming Clay would be essential for this build if one has Bloodletting or Offering, allowing for passive block at the start of the next turn.
+Sentinel is excellent for this type of strategy as having a way to exhaust such as True Grit provides both energy and exhausting Sentinel will refresh 2 energy if done last. It can also help with status cards if you have Feel No Pain.
+Thorns such as BronzeScales Bronze Scales work perfectly as this is the Ironclad's most steam gathering deck build to go for.
+While Reaper isn't much healing, it could be pivotal for surviving until the next encounter.
+Having an Icon Artifact Artifact can help prevent getting Icon Frail Frail or having the Turnip Turnip or OrangePellets Orange Pellets will essentially provide a much more worry free game.
+Icon Strength High Strength Deck
+This build focuses on increasing Icon Strength Strength and multiplying its power through the choice of attacks. Attacks that hit multiple creatures, or hit multiple times scale more effectively with Icon Strength Strength.
+Spot Weakness, Flex, Limit Break, Demon Form, and Inflame are cards that offer Icon Strength Strength.
+A helpful tip with Flex, in particular, is that if you have an Icon Artifact Artifact before you use Flex, or trigger the effect of OrangePellets Orange Pellets after using Flex, you won't lose the Icon Strength Strength gained from it on the next turn. This gives Flex good synergy with sources of Icon Artifact Artifacts, such as ClockworkSouvenir Clockwork Souvenir or Panacea.
+Limit Break also allows you to benefit permanently from temporary strength effects such as Flex.
+Whirlwind/Heavy Blade, Sword Boomerang, Twin Strike, etc. are all cards that synergize well with Icon Strength Strength.
+Reaper becomes a very powerful healing tool with high Icon Strength Strength, especially when paired with a MagicFlower Magic Flower.
+Icon Vulnerable Vulnerability cards such as Bash, Trip, and Thunderclap work very well with the high damaging attacks offered to you with high Icon Strength Strength.
+If Limit Break is upgraded, you can cast it multiple times for exponential strength gain. Headbutt and a small deck size help you cast it more often. Relics and potions that grant some initial strength are very helpful in case you draw Limit Break within the first few turns.
+Additional sources of energy are very useful such as Lantern Lantern, Seeing Red, Bloodletting, and Offering.
+Rupture is a must if you go for Seeing Red or Offering allowing you take full advantage of the strength, especially if upgraded.
+Searing Blow Deck
+Upgrade Searing Blow every opportunity you can. Its damage increases more with each upgrade, reaching 100+ damage after ten upgrades.
+Icon Vulnerable Vulnerable is extremely good in a Searing Blow deck, as when upgraded a lot the extra damage can easily reach 40-50+
+The deck should be kept small to cycle back to Searing Blow as often as possible.
+If you decide to go for a Searing Blow deck, you should always take the path that gives you the most campfires
+Most must-upgrade cards become less valuable, as their upgrade is taking away from Searing Blow's power.
+You generally only want to aim for a Searing Blow deck if you meet the following criteria:
+You get it early in Act I (preferably before your first campfire)
+You have a path that can take you through at least 3+ campfires in Act I
+Card synergies:
+Headbutt let you play it an extra time each deck cycle
+Dual Wield gives you additional copies if you manage to get it in the same hand as Searing Blow.
+If you get Dual Wield in a Searing Blow deck, you should prioritize cards that help you find the combo:
+Secret Weapon+ is probably the best one in bringing Searing Blow to your hand.
+Violence is also good if your deck is small and you don't have many Attacks remaining.
+RunicPyramid Runic Pyramid will ensure that you get the combo at some point.
+All exhaust cards can be very good at thinning your deck during combat.
+Double Tap let your Searing Blow deal double damage
+Armaments- can continually ramp up your Searing Blow damage during combat
+Relic synergies:
+WarpedTongs Warped Tongs will continually upgrade your Searing Blow over time during combat.
+WingedGreaves Wing Boots allows you to take additional campfires that you normally won't be able to get to.
+Necronomicon Necronomicon doubles the damage of Searing Blow every time you play it.
+PenNib Pen Nib - double damage of Searing Blow but requires some planning to execute.
+PaperFrog Paper Phrog has a minor synergy but at higher Searing Blow levels the increase of damage from this relic is significant.
+DollysMirror Dolly's Mirror - if you get this after you have upgraded your Searing Blow a few times, it will effectively double the strength of the deck.
+Corruption + DeadBranch Dead Branch Deck
+While the focus is corruption, Feel No Pain and Juggernaut will essentially carry the entire deck ensuring passive block and damage for extreme survival.
+Corruption makes all Skills cost 0 in exchange for exhausting them upon use, but DeadBranch Dead Branch would generate a replacement for used skill. If DeadBranch Dead Branch generates another Skill, then you can use another Skill again for free.
+Most of Ironclad Skills grant high Icon Block Block, allow you to easily tank damage once you use multiple of them. If possible, use Barricade beforehand to allow Icon Block Block you've gained not to be wasted between turns.
+Some of Ironclad Skills grant Energy. Special notes goes to Seeing Red which normally cost 1 un-upgraded. With Corruption, it becomes a free 2 Energy generation. Spend Energy gained on other crucial cards on your hand, such as Power card or Attacks.
+Fiend Fire can generate a lot of random cards with DeadBranch Dead Branch, which gives more chance to generate random 0-cost Skills cards
+Corruption + Dark Embrace Deck
+Unlike the normal exhaustion and defense strategies above (which focus on building up power over time), your goal here is to try and make your deck almost entirely out of skills, get out Corruption and Dark Embrace together, then burn through your entire deck in one turn to raise your defense, with doubling effects from Entrench played last, finally followed by one or more Body Slams to kill the enemy in one hit.
+The essential cards are Corruption, Dark Embrace, Entrench, and Body Slam, plus cards like Impervious,Shrug It Off, and Sentinel to build defense before you double it with Entrench. Provided you keep your deck overwhelmingly tilted towards skills and fill it with lots of card draw, you should only need to draw Corruption and Dark Embrace before you start comboing off; the rest of the combo will be found as you draw your deck. Multiple copies of Entrench or Body Slam (or things that duplicate them) are still extremely valuable; you also want to upgrade Corruption, Dark Embrace, and Body Slam to reduce the cost of the combo so you can deploy it faster.
+It's also important to have cards that let you dig for your combo, such as Shrug It Off, Burning Pact, and Offering. Beyond just letting you dig for your combo, these let you draw past attack cards when comboing off.
+Hitting your hand maximum is a serious problem, especially if you obtain multiple copies of Dark Embrace or large numbers of card-drawing skill cards.Bloodletting can help you play other cards to get them out of your hand and can provide the energy you need to play Corruption and Dark Embrace as soon as possible. Burning Pact allows you to get unwanted cards out of your hands while drawing a large amount. Once the combo is deployed, Sentinel will both provide additional Icon Block Block and a large amount of free energy to play out the rest of your hand. True Grit can be used to avoid cards getting clogged in your hand, but it's extremely important to upgrade it to avoid the risk of having it hit your combo pieces. Offering both draws you cards and gives you energy to play your non-skills.
+Double Tap and Dual Wield can amplify the final blow by doubling your Body Slam, while Secret Weapon can dig for your Body Slam. Do not upgrade your Secret Weapon, since you want it to be exhausted so Dark Embrace will let you draw a card off it.
+Powers that provide persistent benefits to your defense or exhaustion intended to help you over multiple turns or which give you minor benefits for exhausts and Icon Block blocks are somewhat less useful to you, since your goal is to combo off in a single turn for overwhelming damage rather than slowly accumulating benefits; but they're still worth collecting, since they give you a backup strategy in case you can't get all your combo pieces or something else goes wrong.Barricade is particularly useful because it allows you to, if necessary, split your combo over multiple turns, or to accumulate Icon Block Block slowly before you finally get everything you need to go off.
+An alternative but similar strategy is to use Juggernaut, Corruption, and Feel No Pain. Each defensive skill played is worth an additional 10-14 damage.Iron Waves are good fallbacks.
+Removals should focus on getting rid of your Strikes rather than your Defends; while your Defends aren't as good as your other Icon Block Block cards, they can still be cycled through for free once you have Corruption and Dark Embrace out.
+Perfected Strike Deck
+Perfected Strike+ strike cards (Strike, Pommel Strike, Twin Strike, Wild Strike, Swift Strike).
+StrikeDummy Strike Dummy will add to the overall damage making it a must have.
+Your deck will become very heavy, lots of draw like Battle Trance, Shrug It Off, Warcry, and especially Offering will be important, as will in-battle upgrade effects like Apotheosis, Armaments+, and WarpedTongs Warped Tongs.
+Having at least two copies of Fire Breathing especially when upgraded will take advantage of the wounds from wild strike.
+You will also need to be on the lookout for strong defensive Relics, such as: SelfFormingClay Self-Forming Clay, Orichalcum Orichalcum, Anchor Anchor, Horn cleat Horn Cleat, or Captain wheel Captain's Wheel.
+Necronomicon Necronomicon synergizes very well with Perfected Strike+.
+PrayerWheel Prayer Wheel works very well with this deck as it gives you twice as many occasions to add Strike cards.
+Dual Wield increases the power of the deck a lot more than usual, increasing the damage of each Perfected Strike by up to 6, and increasing the amount to be drawn.
+An extra energy such as Seeing Red or Lantern Lantern is particularly important to be able to play multiple copies if desired.
+Only take MarkofPain Mark of Pain if you have a Fire Breathing beforehand.
+A few exhaust cards such as True Grit+ and Second Wind will help mitigate wounds and provide defense.
+Status + Evolve Deck
+Uses powerful cards with drawbacks that inflict Status cards, such as Wild Strike, Power Through, Reckless Charge and Immolate, with Evolve to negate the loss of draws.
+Exhaust cards like True Grit, Sever Soul, Second Wind, and Fiend Fire can keep you from becoming overwhelmed in long term fights. Shrug It Off can give Icon Block Block even with Dazed from Reckless Charge. Feel No Pain also pairs well with cards that create Dazed, effectively granting you 3-4 block per Dazed card in hand at the end of your turn.
+True Grit and Evolve are your high-priority targets for upgrades, as True Grit+ lets you decide which card to Exhaust, and Evolve+ increases your draws instead of replacing them, greatly speeding up your deck.
+MarkofPain Mark of Pain effectively loses its downside.
+With an upgraded Evolve, a 9 card Fiend Fire happens easily.
+Top it off with Fire Breathing for a nice passive AoE damage. A normal draw full of Status can easily turns into 30-50 damage to ALL enemies. With multiple copies this can easily be your main source of damage.
+Only run multiple copies of Fire Breathing if you're quickly and consistently getting out Evolve, or you'll only slow your deck down.
+This build mitigates the power of most Status inflicting enemies, and synergizes well with many other deck types.
+MedicalKit Medical Kit greatly improves your ability to manage your Status cards, improving your performance in long-term fights. It also negates the self-damage from Immolate.
+Card draw like Battle Trance and Pommel Strike+ is important for digging through your deck and getting Evolve set up as soon as possible.
+Masochist Deck
+Utilizes Rupture and cards that deal damage to you, aiming to finish fights quickly.
+Each use of Rupture increases Icon Strength Strength gained per trigger. You may stack it 2 or 3 times to quicken your Icon Strength Strength growth.
+After applying Rupture, use Brutality or Combust. Their health cost per turn means you would gain 1 Icon Strength Strength every turn.
+Unless you want additional card draw or AoE damage, you would not need more than 1 copy of these two, as stacking them increases health loss but not Rupture's Icon Strength Strength gain.
+Icon Strength Strength gain from Rupture is consistent if built for, but it can be slow. Limit Break+ can help multiplying your Icon Strength Strength to finish fights before you lose too much health.
+Hemokinesis, Offering, and Bloodletting are the other cards that self harm.
+TheBlueCandle Blue Candle allows you to hurt yourself by exhausting curse cards.
+Reaper benefits from the Icon Strength Strength gain and provides some much needed healing.
+Necronomicon Necronomicon can double the healing provided.
+J.A.X. is a chance encounter, but grants you both health loss to trigger Rupture while also grants you Icon Strength Strength on its own.
+Any cards that benefit from Icon Strength Strength gain are good here.
+SelfFormingClay Self-Forming Clay and MagicFlower Magic Flower are essentials if found as both can prevent too much damage from occurring.
+Draw to get your combo together is very helpful. Make sure to get some Icon Block defense to keep outside damage taken low.
+Blood for Blood does significant damage and will quickly become cheap or free with Brutality or Combust. Having a solid 0-cost attack lets you take advantage of the extra cards drawn from Brutality, and can tide you over if you don't find Rupture early on (or draw it early in the fight).
+The Pain Curse card can enable easy Rupture scaling. If you obtain a Pain in the early game, perhaps even as part of Neow's blessing, it may be worth building towards a Masochist deck. This can be further empowered with RunicCube Runic Cube, allowing you to cycle through more cards than usual whenever Pain is in your hand.
+Fiend Fire Deck
+Gather a lot of cards, especially cards with card draw and energy like Battle Trance.
+With a lot of cards in your hand use Fiend Fire to deal high damage to target. 
+Fiend Fire scales very well with Icon Strength Strength.
+RunicPyramid Runic Pyramid can help you gather a large number of cards.
+Dropkick Infinite Deck
+Get Dropkick and remove as many other cards as possible. Once you have 2 Dropkicks or 1 Dropkick + Dual Wield, you can play Bash + lnfinite Dropkick. Upgraded Offering is very useful in this build because it can draw 5 cards, which means that you can infinite kicks with a 10 card deck.
+This is an easy to assemble but strong build. It can be done with restarting short games to get Dropkick early.
+SneckoEye Snecko Eye Deck
+If you manage to get SneckoEye Snecko Eye during first Boss fight, you can go for cards with high energy costs as main damage dealer: Bludgeon, Carnage and Immolate are the best, while Sever Soul and Fiend Fire can help with clutter.
+Dual Wield is what makes this build shine: getting two zero cost Bludgeons is usually enough to finish a fight.
+Defensively it's possible to focus exclusively on Flame Barrier.
+Going for Perfected Strike build is a sound strategy prior to getting SneckoEye Snecko Eye, since Boss rewards are rather random.
+Rampage Deck
+Keep the deck small with cards to support your Rampage, preferably upgraded one, and use it repeatedly.
+A balance between draw power like Battle Trance, Warcry, etc. and defense is good as Rampage can scale up quickly as main damage source with appropriate support cards, Shrug It Off is a great card as it provide both.
+Best support card for Rampage is Double Tap, which ram up the power twice, and Headbutt can allow you to search for Rampage to be used more frequently.
+If possible, Icon Vulnerable Vulnerable relics and cards can be devastating for enemies if combined with a well scaled Rampage.
+Avoid cards that give Status like Wild Strike, Reckless Charge, or Immolate. It can make Rampage become inaccessible or less likely to be drawn later in fight, which defeat the purpose of the card. Only take them if you have Evolve+, and even then just reckless charge unless you have MedicalKit Medical Kit or Second Wind to prevent situations where your hand is full of status cards.
+Do not use Havoc unless you have FrozenEye Frozen Eye.
+Unlike in a Claw deck, only 1 Rampage should be taken.

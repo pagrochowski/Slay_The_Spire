@@ -119,6 +119,15 @@ class RunManager:
                 "sapphire": False
             },
             
+            # Current boss (set when player sees the map)
+            "current_boss": None,
+            
+            # Detected archetype tendencies
+            "archetype_hints": [],
+            
+            # Strategy notes (evolve during run)
+            "strategy": [],
+            
             # Events log (for context)
             "events": [
                 {
@@ -252,6 +261,88 @@ class RunManager:
         run["last_updated"] = datetime.now().isoformat()
         self._save()
         return run
+    
+    def set_boss(self, boss_name: str) -> Optional[dict]:
+        """Set the current act boss."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        run["current_boss"] = boss_name
+        run["events"].append({
+            "floor": run["floor"],
+            "type": "boss_scouted",
+            "timestamp": datetime.now().isoformat(),
+            "details": f"Boss: {boss_name}"
+        })
+        run["last_updated"] = datetime.now().isoformat()
+        self._save()
+        logger.info(f"Boss set: {boss_name}")
+        return run
+    
+    def add_archetype_hint(self, archetype: str) -> Optional[dict]:
+        """Track that the deck is leaning toward an archetype."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        if "archetype_hints" not in run:
+            run["archetype_hints"] = []
+        
+        if archetype not in run["archetype_hints"]:
+            run["archetype_hints"].append(archetype)
+            run["last_updated"] = datetime.now().isoformat()
+            self._save()
+        return run
+    
+    def add_strategy(self, note: str) -> Optional[dict]:
+        """Add a strategy note to the run."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        if "strategy" not in run:
+            run["strategy"] = []
+        
+        # Avoid exact duplicates
+        if note not in run["strategy"]:
+            run["strategy"].append(note)
+            run["last_updated"] = datetime.now().isoformat()
+            self._save()
+            logger.info(f"Strategy added: {note}")
+        return run
+    
+    def remove_strategy(self, note: str) -> Optional[dict]:
+        """Remove a strategy note from the run."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        if "strategy" in run and note in run["strategy"]:
+            run["strategy"].remove(note)
+            run["last_updated"] = datetime.now().isoformat()
+            self._save()
+            logger.info(f"Strategy removed: {note}")
+        return run
+    
+    def clear_strategy(self) -> Optional[dict]:
+        """Clear all strategy notes."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        run["strategy"] = []
+        run["last_updated"] = datetime.now().isoformat()
+        self._save()
+        logger.info("Strategy cleared")
+        return run
+    
+    def get_strategy(self) -> list:
+        """Get current strategy notes."""
+        run = self.get_active_run()
+        if not run:
+            return []
+        return run.get("strategy", [])
     
     def end_run(self, victory: bool = False, cause: str = None) -> Optional[dict]:
         """End the active run."""
