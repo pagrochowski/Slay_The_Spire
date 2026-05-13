@@ -172,6 +172,14 @@ class KnowledgeBase:
         return found
 
 
+def format_deck_counts(cards: list) -> str:
+    """Format a deck list with counts (e.g., '5x Strike, 4x Defend, 1x Bash')."""
+    from collections import Counter
+    counts = Counter(cards)
+    parts = [f"{count}x {card}" for card, count in counts.items()]
+    return ", ".join(parts)
+
+
 class GeminiAdvisor:
     """Slay the Spire advisor powered by Gemini API with RAG."""
     
@@ -271,7 +279,8 @@ RESPONSE STYLE:
 - Keep responses BRIEF (2-3 sentences) since they're spoken aloud
 - Be conversational, not robotic
 - Give specific, actionable advice
-- Reference the player's actual deck/relics when relevant"""
+- Reference the player's actual deck/relics when relevant
+- When mentioning deck contents, use counts like '5 Strikes' not 'Strike, Strike, Strike...'"""
 
     def _build_run_context(self) -> str:
         """Build detailed run context string."""
@@ -280,13 +289,11 @@ RESPONSE STYLE:
         
         r = self.active_run
         
-        # Build deck summary
-        deck_cards = r.get("cards", [])
-        deck_summary = f"Starter deck + {len(deck_cards)} added cards"
-        if deck_cards:
-            deck_summary += f": {', '.join(deck_cards[:10])}"
-            if len(deck_cards) > 10:
-                deck_summary += f" (+{len(deck_cards) - 10} more)"
+        # Build full deck (starter + added)
+        starter = r.get("starter_deck", [])
+        added = r.get("cards", [])
+        full_deck = starter + added
+        deck_summary = format_deck_counts(full_deck) + f" ({len(full_deck)} total)"
         
         # Build relic list
         relics = r.get("relics", [])
@@ -384,11 +391,12 @@ Relics: {relics_str}
         }
         
         # Notify Gemini about the new run
+        starter_deck_str = format_deck_counts(char_data['starter_deck'])
         context = f"""[NEW RUN STARTED]
 Character: {char_data['name']} (Ascension {ascension})
 Starting HP: {max_hp}
 Starter Relic: {char_data['starter_relic']} - {char_data['starter_relic_desc']}
-Starter Deck: {', '.join(char_data['starter_deck'])}
+Starter Deck: {starter_deck_str}
 
 Please acknowledge the new run briefly."""
         
