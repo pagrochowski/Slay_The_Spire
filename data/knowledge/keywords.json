@@ -1,0 +1,440 @@
+{
+  "_meta": {
+    "file": "keywords.json",
+    "description": "Game mechanics and keyword definitions",
+    "usage": "Load when: explaining game mechanics, clarifying keyword meanings",
+    "count": 52,
+    "last_updated": "2026-05-14"
+  },
+  "keywords": [
+    {
+      "name": "Artifact",
+      "description": "Negates the next debuff.",
+      "names": [
+        "artifact"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Block",
+      "description": "Until next turn, prevents damage.",
+      "names": [
+        "block",
+        "blocks"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Burn",
+      "description": "Burns are unplayable status cards that damage you.",
+      "names": [
+        "burn",
+        "burns"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Calm",
+      "description": "Upon exiting this Stance, gain [W] [W] .",
+      "names": [
+        "calm"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Channel",
+      "description": "Channeling an Orb puts it into your first empty slot. If you have no empty slots, your first Orb is automatically Evoked to make room.",
+      "names": [
+        "channel",
+        "channeled"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Confused",
+      "description": "Whenever you draw a card, randomize its cost.",
+      "names": [
+        "confused"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Curse",
+      "description": "Curse cards are negative cards that stay in your deck.",
+      "names": [
+        "curse"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Dark",
+      "description": "Orb: Increases damage every turn. When Evoked, deals damage to the enemy with the least HP.",
+      "names": [
+        "dark",
+        "dark+"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Dazed",
+      "description": "Dazed are unplayable status cards.",
+      "names": [
+        "dazed"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Dexterity",
+      "description": "Dexterity improves Block gained from cards.",
+      "names": [
+        "dexterity"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Divinity",
+      "description": "Upon entering this stance, gain [W] [W] [W] . Attacks deal triple damage. Exit this Stance at the start of your next turn.",
+      "names": [
+        "divinity"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Ethereal",
+      "description": "If this card is in your hand at the end of turn, it is exhausted. Exhausted cards are removed from your deck until the end of combat.",
+      "names": [
+        "ethereal"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Evoke",
+      "description": "Consume your rightmost Orb and use its Evoke effect.",
+      "names": [
+        "evoke",
+        "evoked"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Exhaust",
+      "description": "Removed until end of combat.",
+      "names": [
+        "exhaust",
+        "exhausted",
+        "exhausts"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Fatal",
+      "description": "Triggers whenever this card kills a non-minion enemy.",
+      "names": [
+        "fatal"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Focus",
+      "description": "Focus increases the effectiveness of Channeled Orbs.",
+      "names": [
+        "focus"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Frail",
+      "description": "While Frail, gain 25% less Block from cards.",
+      "names": [
+        "frail"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Frost",
+      "description": "Orb: Gains Block.",
+      "names": [
+        "frost",
+        "frost+"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Innate",
+      "description": "Start each combat with this card in your hand.",
+      "names": [
+        "innate"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Intangible",
+      "description": "Reduce ALL damage taken and HP loss to 1.",
+      "names": [
+        "intangible"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Lightning",
+      "description": "Orb: Deals damage to random enemies.",
+      "names": [
+        "lightning",
+        "lightning+"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Lock-on",
+      "description": "Lock-On targets receive 50% more damage from Orbs.",
+      "names": [
+        "lock-on"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Locked",
+      "description": "This card has yet to be unlocked.",
+      "names": [
+        "locked"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Mantra",
+      "description": "When you obtain 10 Mantra, enter Divinity.",
+      "names": [
+        "mantra"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Opener",
+      "description": "Opener cards may only be played as the first card each turn.",
+      "names": [
+        "opener"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Plasma",
+      "description": "Orb: Gains Energy.",
+      "names": [
+        "plasma",
+        "plasma+"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Poison",
+      "description": "Poisoned creatures lose HP at the start of their turn. Each turn, Poison is reduced by 1.",
+      "names": [
+        "poison",
+        "poisoned"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Regen",
+      "description": "Regen heals HP at the end of your turn. Each turn, Regen is reduced by 1.",
+      "names": [
+        "regen"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Retain",
+      "description": "Retained cards are not discarded at the end of turn.",
+      "names": [
+        "retain",
+        "retained",
+        "retains"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Ritual",
+      "description": "Gain Strength at the end of your turn.",
+      "names": [
+        "ritual"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Scry",
+      "description": "Look at the top X cards of your draw pile. You may discard any of them.",
+      "names": [
+        "scry"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Shiv",
+      "description": "Shivs are 0 cost Attack cards which Exhaust.",
+      "names": [
+        "shiv",
+        "shivs"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Stance",
+      "description": "You can only have one stance at a time.",
+      "names": [
+        "stance",
+        "stances"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Status",
+      "description": "Status cards are removed at the end of combat.",
+      "names": [
+        "status"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Strength",
+      "description": "Strength adds additional damage to attacks.",
+      "names": [
+        "strength"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Strike",
+      "description": "Any card with the word \"Strike\" in its name.",
+      "names": [
+        "strike"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Thorns",
+      "description": "When receiving Attack damage, deals damage back.",
+      "names": [
+        "thorns"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Transform",
+      "description": "Transformed cards become a random card of any rarity.",
+      "names": [
+        "transform"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Unknown",
+      "description": "This card has yet to be encountered.",
+      "names": [
+        "unknown"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Unplayable",
+      "description": "Unplayable cards cannot be played from your hand.",
+      "names": [
+        "unplayable"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Upgrade",
+      "description": "Upgrading cards makes them more powerful. Cards can only be upgraded once.",
+      "names": [
+        "upgrade",
+        "upgraded"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Vigor",
+      "description": "Your next Attack deals additional damage.",
+      "names": [
+        "vigor"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Void",
+      "description": "Voids are unplayable status cards that consume energy when drawn.",
+      "names": [
+        "void",
+        "voids"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Vulnerable",
+      "description": "Vulnerable creatures take 50% more damage from Attacks.",
+      "names": [
+        "vulnerable"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Weak",
+      "description": "Weakened creatures deal 25% less damage with Attacks.",
+      "names": [
+        "weak",
+        "weaken",
+        "weakened",
+        "weakens"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Wound",
+      "description": "Wounds are unplayable status cards.",
+      "names": [
+        "wound",
+        "wounds"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "Wrath",
+      "description": "In this Stance, you deal and receive double attack damage.",
+      "names": [
+        "wrath"
+      ],
+      "mod": ""
+    },
+    {
+      "name": "[B]",
+      "description": "Energy is used to play cards from your hand.",
+      "names": [],
+      "mod": ""
+    },
+    {
+      "name": "[E]",
+      "description": "Energy is used to play cards from your hand.",
+      "names": [
+        "[E]"
+      ],
+      "mod": "BaseMod"
+    },
+    {
+      "name": "[G]",
+      "description": "Energy is used to play cards from your hand.",
+      "names": [],
+      "mod": ""
+    },
+    {
+      "name": "[R]",
+      "description": "Energy is used to play cards from your hand.",
+      "names": [],
+      "mod": ""
+    },
+    {
+      "name": "[W]",
+      "description": "Energy is used to play cards from your hand.",
+      "names": [],
+      "mod": ""
+    }
+  ]
+}

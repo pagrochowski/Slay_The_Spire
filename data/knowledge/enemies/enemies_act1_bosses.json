@@ -1,0 +1,71 @@
+{
+  "_meta": {
+    "file": "enemies_act1_bosses.json",
+    "description": "Act 1 boss fights with full move patterns and strategy from wiki",
+    "usage": "Load when: planning boss fight in Act 1, asking about Act 1 bosses",
+    "count": 3,
+    "last_updated": "2026-05-14"
+  },
+  "bosses": [
+    {
+      "name": "Slime Boss",
+      "type": "BOSS",
+      "act": 1,
+      "hp_range": [
+        140,
+        150
+      ],
+      "mechanics": [
+        "Splits at 50% HP into 2 Large Slimes",
+        "Pattern: Goop Spray → Preparing → Slam (35-38 dmg) → repeat",
+        "Slimed cards clog deck"
+      ],
+      "strategy_tips": [
+        "Deal 70+ damage in first 3 turns to force early split",
+        "Bring the boss below 50% HP as much as possible before split to weaken resulting slimes",
+        "Prepare for multi-target after split",
+        "Block for 35-38 damage Slam"
+      ]
+    },
+    {
+      "name": "The Guardian",
+      "type": "BOSS",
+      "act": 1,
+      "hp_range": [
+        250,
+        260
+      ],
+      "mechanics": [
+        "Alternates between offensive and defensive modes",
+        "Defensive mode: High block, gains artifact",
+        "Offensive mode: High damage attacks"
+      ],
+      "strategy_tips": [
+        "Save burst damage for offensive mode",
+        "Don't waste debuffs during defensive mode (artifact blocks them)",
+        "Build block during defensive mode",
+        "Need frontload damage or multi-hit for artifact"
+      ]
+    },
+    {
+      "name": "Hexaghost",
+      "type": "BOSS",
+      "act": 1,
+      "hp_range": [
+        250,
+        264
+      ],
+      "mechanics": [
+        "6 attacks then Inferno (big AoE damage)",
+        "Attacks scale each cycle",
+        "Burns add to hand"
+      ],
+      "strategy_tips": [
+        "Count turns - need big block on turn 7, 14, 21",
+        "Exhaust or discard Burns to manage hand",
+        "Damage scales - finish fight quickly",
+        "Need 30-45+ block for Inferno"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+{
+  "_meta": {
+    "file": "relics_boss.json",
+    "description": "Boss pool relics",
+    "usage": "Load when: evaluating boss relics, checking relic rewards",
+    "count": 30,
+    "last_updated": "2026-05-14"
+  },
+  "relics": [
+    {
+      "name": "Astrolabe",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Upon pickup, Transform 3 cards, then Upgrade them.",
+      "flavor_text": "A tool to glean invaluable knowledge from the stars."
+    },
+    {
+      "name": "Black Blood",
+      "tier": "Boss",
+      "pool": "Red",
+      "description": "Replaces Burning Blood. At the end of combat, heal 12 HP.",
+      "flavor_text": "The rage grows darker."
+    },
+    {
+      "name": "Black Star",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Elites drop an additional relic when defeated.",
+      "flavor_text": "Originally discovered in the town of the serpent, beside a solitary candle."
+    },
+    {
+      "name": "Busted Crown",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Gain [E] at the start of your turn. Future card rewards have 2 less cards to choose from.",
+      "flavor_text": "The Champ's crown... or a pale imitation?"
+    },
+    {
+      "name": "Calling Bell",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Upon pickup, obtain a unique Curse and 3 relics.",
+      "flavor_text": "This dark iron bell rang 3 times when you found it, but now stays silent."
+    },
+    {
+      "name": "Coffee Dripper",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Gain [E] at the start of your turn. You can no longer Rest at Rest Sites.",
+      "flavor_text": "\"Yes, another cup please. Back to work. Back to work!\" - The Architect"
+    },
+    {
+      "name": "Cursed Key",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Gain [E] at the start of your turn. Whenever you open a non-Boss chest, obtain a Curse.",
+      "flavor_text": "You can feel the malicious energy emanating from the key. Power comes at a price."
+    },
+    {
+      "name": "Ectoplasm",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Gain [E] at the start of your turn. You can no longer gain Gold.",
+      "flavor_text": "This blob of slime and energy seems to pulse with life."
+    },
+    {
+      "name": "Empty Cage",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Upon pickup, remove 2 cards from your deck.",
+      "flavor_text": "\"How unusual to cage that which you worship.\" - Ranwid"
+    },
+    {
+      "name": "Frozen Core",
+      "tier": "Boss",
+      "pool": "Blue",
+      "description": "Replaces Cracked Core. If you end your turn with any empty Orb slots, Channel 1 Frost.",
+      "flavor_text": "The crack in your core has been filled with a pulsating cold energy."
+    },
+    {
+      "name": "Fusion Hammer",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Gain [E] at the start of your turn. You can no longer Smith at Rest Sites.",
+      "flavor_text": "Once wielded, the owner can never let go."
+    },
+    {
+      "name": "Holy Water",
+      "tier": "Boss",
+      "pool": "Purple",
+      "description": "Replaces Pure Water. At the start of each combat, add 3 Miracles into your hand.",
+      "flavor_text": "Collected from a time before the Spire."
+    },
+    {
+      "name": "Hovering Kite",
+      "tier": "Boss",
+      "pool": "Green",
+      "description": "The first time you discard a card each turn, gain [E] .",
+      "flavor_text": "The Kite floats around you in battle, propelled by a mysterious force."
+    },
+    {
+      "name": "Inserter",
+      "tier": "Boss",
+      "pool": "Blue",
+      "description": "Every 2 turns, gain 1 Orb slot.",
+      "flavor_text": "Push. Pull. Stack. Repeat."
+    },
+    {
+      "name": "Mark of Pain",
+      "tier": "Boss",
+      "pool": "Red",
+      "description": "Gain [R] at the start of your turn. At the start of combat, shuffle 2 Wounds into your draw pile.",
+      "flavor_text": "This brand was used by the northern tribes to signify warriors who had mastered pain in battle."
+    },
+    {
+      "name": "Nuclear Battery",
+      "tier": "Boss",
+      "pool": "Blue",
+      "description": "At the start of each combat, Channel 1 Plasma.",
+      "flavor_text": "Ooooh..."
+    },
+    {
+      "name": "Pandora's Box",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Upon pickup, Transform all Strike and Defend cards.",
+      "flavor_text": "You have a bad feeling about opening this."
+    },
+    {
+      "name": "Philosopher's Stone",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Gain [E] at the start of your turn. ALL enemies start combat with 1 Strength.",
+      "flavor_text": "Raw energy emanates from the stone, empowering all nearby."
+    },
+    {
+      "name": "Ring of the Serpent",
+      "tier": "Boss",
+      "pool": "Green",
+      "description": "Replaces Ring of the Snake. At the start of your turn, draw 1 additional card.",
+      "flavor_text": "Your ring has morphed and changed forms."
+    },
+    {
+      "name": "Runic Cube",
+      "tier": "Boss",
+      "pool": "Red",
+      "description": "Whenever you lose HP, draw 1 card.",
+      "flavor_text": "The runes are indecipherable."
+    },
+    {
+      "name": "Runic Dome",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Gain [E] at the start of your turn. You can no longer see enemy intents.",
+      "flavor_text": "The runes are indecipherable."
+    },
+    {
+      "name": "Runic Pyramid",
+      "tier": "Boss",
+      "pool": "",
+      "description": "At the end of your turn, you no longer discard your hand.",
+      "flavor_text": "The runes are indecipherable."
+    },
+    {
+      "name": "Sacred Bark",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Double the effectiveness of potions.",
+      "flavor_text": "A bark rumored to originate from the World tree."
+    },
+    {
+      "name": "Slaver's Collar",
+      "tier": "Boss",
+      "pool": "",
+      "description": "During Boss and Elite combats, gain [E] at the start of your turn.",
+      "flavor_text": "Rusty miserable chains."
+    },
+    {
+      "name": "Snecko Eye",
+      "tier": "Boss",
+      "pool": "",
+      "description": "At the start of your turn, draw 2 additional cards. Start each combat Confused.",
+      "flavor_text": "An eye of a fallen snecko. Much larger than you imagined."
+    },
+    {
+      "name": "Sozu",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Gain [E] at the start of your turn. You can no longer obtain potions.",
+      "flavor_text": "You notice that magical liquids seem to lose their properties when near this relic."
+    },
+    {
+      "name": "Tiny House",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Upon pickup, obtain 1 potion.\nGain 50 Gold.\nRaise your Max HP by 5.\nObtain 1 card.\nUpgrade 1 random card.",
+      "flavor_text": "\"A near perfect implementation of miniaturization. My finest work to date, but still not adequate.\" - The Architect"
+    },
+    {
+      "name": "Velvet Choker",
+      "tier": "Boss",
+      "pool": "",
+      "description": "Gain [E] at the start of your turn. You cannot play more than 6 cards per turn.",
+      "flavor_text": "\"Immense power, but too limited.\" - Kublai the Great"
+    },
+    {
+      "name": "Violet Lotus",
+      "tier": "Boss",
+      "pool": "Purple",
+      "description": "Whenever you exit Calm, gain an additional [E] .",
+      "flavor_text": "The old texts describe that the surface of \"mana pools\" were littered with these flowers."
+    },
+    {
+      "name": "Wrist Blade",
+      "tier": "Boss",
+      "pool": "Green",
+      "description": "Attacks that cost 0 deal 4 additional damage.",
+      "flavor_text": "Handy for assassinations."
+    }
+  ]
+}

@@ -50,7 +50,8 @@ class VoiceConfig:
     
     # Whisper settings
     whisper_backend: str = "groq"  # groq (API, better accuracy) or local (faster-whisper)
-    whisper_model: str = "whisper-large-v3-turbo"  # For Groq: whisper-large-v3-turbo, whisper-large-v3
+    whisper_model: str = "whisper-large-v3"  # Primary: whisper-large-v3 (better accuracy)
+    whisper_fallback_model: str = "whisper-large-v3-turbo"  # Fallback: turbo (faster)
     whisper_device: str = "cuda"  # cuda, cpu, auto (only for local backend)
     whisper_compute_type: str = "float16"  # float16, int8, int8_float16 (only for local)
     
@@ -95,7 +96,7 @@ class SpeechToText:
                 return False
             
             self.groq_client = Groq(api_key=api_key)
-            logger.info(f"Groq Whisper API initialized (model: {self.config.whisper_model})")
+            logger.info(f"Groq Whisper API initialized (primary: {self.config.whisper_model}, fallback: {self.config.whisper_fallback_model})")
             self._initialized = True
             return True
         except ImportError:
@@ -176,9 +177,12 @@ class SpeechToText:
         else:
             return self._transcribe_local(audio_data)
     
-    def _transcribe_groq(self, audio_data: np.ndarray) -> str:
-        """Transcribe using Groq Whisper API."""
+    def _transcribe_groq(self, audio_data: np.ndarray, use_fallback: bool = False) -> str:
+        """Transcribe using Groq Whisper API with fallback support."""
         import tempfile
+        
+        # Select model (primary or fallback)
+        model = self.config.whisper_fallback_model if use_fallback else self.config.whisper_model
         
         try:
             # Save audio to temp WAV file
@@ -197,7 +201,7 @@ class SpeechToText:
             with open(temp_path, "rb") as audio_file:
                 transcription = self.groq_client.audio.transcriptions.create(
                     file=(temp_path, audio_file.read()),
-                    model=self.config.whisper_model,
+                    model=model,
                     temperature=0,
                     language="en",
                     response_format="text",
@@ -208,11 +212,17 @@ class SpeechToText:
             os.unlink(temp_path)
             
             text = transcription.strip() if isinstance(transcription, str) else transcription.text.strip()
-            logger.debug(f"Transcribed (Groq): {text}")
+            logger.debug(f"Transcribed (Groq {model}): {text}")
             return text
             
         except Exception as e:
-            logger.error(f"Groq transcription failed: {e}")
+            error_str = str(e)
+            # Try fallback model if primary fails
+            if not use_fallback:
+                logger.warning(f"Primary whisper model ({model}) failed: {e}, trying fallback...")
+                return self._transcribe_groq(audio_data, use_fallback=True)
+            
+            logger.error(f"Groq transcription failed (both models): {e}")
             return ""
     
     def _transcribe_local(self, audio_data: np.ndarray) -> str:

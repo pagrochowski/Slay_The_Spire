@@ -1,0 +1,57 @@
+The Collector
+HP 282 / 300 Ascension Icon9+
+
+In Party With
+None
+Debut Act
+Act 2
+Powers
+None
+The Collector is one of the three bosses encountered at the end of Act 2.
+
+
+Pattern
+Always starts with Spawn and always uses the Mega Debuff on turn 4. Can only have a maximum of 2 Torch Heads throughout the battle.
+
+If one or more of the Torch Heads are dead, has a 25% chance of using Spawn, 45% chance of using Fireball and 30% chance of using Buff.
+
+If both Torch Heads are alive, has a 70% chance of using Fireball and a 30% chance of using Buff.
+
+Cannot use Buff twice in a row and cannot use Fireball three times in a row.
+
+Name	Intent	Effect
+Buff	
+Intent - Buff - Defend
+All enemies gain 3 Icon Strength Strength. Gains 15 Icon Block Block.
+All enemies gain 4 Ascension Icon4+ Icon Strength Strength. Gains 18 Ascension Icon4+ Icon Block Block.
+All enemies gain 5 Ascension Icon19+ Icon Strength Strength. Gains 23 Ascension Icon19+ Icon Block Block.
+Fireball	Attack intent 4	Deals 18 damage.
+Deals 21 Ascension Icon4+ damage.
+Mega Debuff
+
+Debuff2
+Applies 3 Icon Weak Weak, 3 Icon Vulnerable Vulnerable, and 3 Icon Frail Frail (in that order).
+Applies 5 Ascension Icon19+ Icon Weak Weak, 5 Ascension Icon19+ Icon Vulnerable Vulnerable, and
+5 Ascension Icon19+ Icon Frail Frail (in that order).
+
+Spawn
+
+Intent - Unknown
+Spawns up to 2 Torch Heads.
+Torch Head
+Torch Head
+Torchhead
+HP
+38-40
+40-45 Ascension Icon9+
+
+In Party With
+Only summoned by The Collector
+Debut Act
+Act 2
+Powers
+None
+A Minion spawned by the Collector.
+
+Pattern
+Always uses Tackle.

@@ -1,0 +1,249 @@
+{
+  "_meta": {
+    "file": "relics_rare.json",
+    "description": "Rare pool relics",
+    "usage": "Load when: evaluating rare relics, checking relic rewards",
+    "count": 34,
+    "last_updated": "2026-05-14"
+  },
+  "relics": [
+    {
+      "name": "Bird-Faced Urn",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Whenever you play a Power card, heal 2 HP.",
+      "flavor_text": "This urn shows the crow god Mazaleth looking mischievous."
+    },
+    {
+      "name": "Calipers",
+      "tier": "Rare",
+      "pool": "",
+      "description": "At the start of your turn, lose 15 Block rather than all of your Block.",
+      "flavor_text": "\"Mechanical precision leads to greatness\" - The Architect"
+    },
+    {
+      "name": "Captain's Wheel",
+      "tier": "Rare",
+      "pool": "",
+      "description": "At the start of your 3rd turn, gain 18 Block.",
+      "flavor_text": "Wooden trinket carved with delicate precision. A name is carved into it but the language is foreign."
+    },
+    {
+      "name": "Champion Belt",
+      "tier": "Rare",
+      "pool": "Red",
+      "description": "Whenever you apply Vulnerable, apply 1 Weak.",
+      "flavor_text": "Only the greatest may wear this belt."
+    },
+    {
+      "name": "Charon's Ashes",
+      "tier": "Rare",
+      "pool": "Red",
+      "description": "Whenever you Exhaust a card, deal 3 damage to ALL enemies.",
+      "flavor_text": "Charon was said to be the god of rebirth, eternally dying and reviving in a burst of flame."
+    },
+    {
+      "name": "Cloak Clasp",
+      "tier": "Rare",
+      "pool": "Purple",
+      "description": "At the end of your turn, gain 1 Block for each card in your hand.",
+      "flavor_text": "A simple but sturdy design."
+    },
+    {
+      "name": "Dead Branch",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Whenever you Exhaust a card, add a random card into your hand.",
+      "flavor_text": "The branch of a tree from a forgotten era."
+    },
+    {
+      "name": "Du-Vu Doll",
+      "tier": "Rare",
+      "pool": "",
+      "description": "For each Curse in your deck, start each combat with 1 Strength.",
+      "flavor_text": "A doll devised to gain strength from malicious energy."
+    },
+    {
+      "name": "Emotion Chip",
+      "tier": "Rare",
+      "pool": "Blue",
+      "description": "If you lost HP during the previous turn, trigger the passive ability of all Orbs at the start of your turn.",
+      "flavor_text": "...<3...?"
+    },
+    {
+      "name": "Fossilized Helix",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Prevent the first time you would lose HP each combat.",
+      "flavor_text": "Seemingly indestructible, you wonder what kind of creature this belonged to."
+    },
+    {
+      "name": "Gambling Chip",
+      "tier": "Rare",
+      "pool": "",
+      "description": "At the start of each combat, discard any number of cards, then draw that many cards.",
+      "flavor_text": "You can see a small inscription on one side. It reads: \"Bear's Lucky Chip!\""
+    },
+    {
+      "name": "Ginger",
+      "tier": "Rare",
+      "pool": "",
+      "description": "You can no longer become Weakened.",
+      "flavor_text": "A potent tool in many tonics."
+    },
+    {
+      "name": "Girya",
+      "tier": "Rare",
+      "pool": "",
+      "description": "You can now gain Strength at Rest Sites (up to 3 times).",
+      "flavor_text": "This Girya is unfathomably heavy. You could train with this to get significantly stronger."
+    },
+    {
+      "name": "Golden Eye",
+      "tier": "Rare",
+      "pool": "Purple",
+      "description": "Whenever you Scry, Scry 2 additional cards.",
+      "flavor_text": "See into the minds of those nearby, predicting their future moves."
+    },
+    {
+      "name": "Ice Cream",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Energy is now conserved between turns.",
+      "flavor_text": "\"Delicious!\""
+    },
+    {
+      "name": "Incense Burner",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Every 6 turns, gain 1 Intangible.",
+      "flavor_text": "The smoke imbues its owner with the spirit of the burned."
+    },
+    {
+      "name": "Lizard Tail",
+      "tier": "Rare",
+      "pool": "",
+      "description": "When you would die, heal to 50% of your Max HP instead (works once).",
+      "flavor_text": "A fake tail to trick enemies during combat."
+    },
+    {
+      "name": "Magic Flower",
+      "tier": "Rare",
+      "pool": "Red",
+      "description": "Healing is 50% more effective during combat.",
+      "flavor_text": "A flower long thought extinct, somehow preserved in perfect condition."
+    },
+    {
+      "name": "Mango",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Upon pickup, raise your Max HP by 14.",
+      "flavor_text": "The most coveted forgotten fruit. Impeccably preserved with no signs of Spireblight."
+    },
+    {
+      "name": "Old Coin",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Upon pickup, gain 300 Gold.",
+      "flavor_text": "Unique coins are highly valued by merchants for their historical value and rare metallic composition."
+    },
+    {
+      "name": "Peace Pipe",
+      "tier": "Rare",
+      "pool": "",
+      "description": "You can now remove cards from your deck at Rest Sites.",
+      "flavor_text": "Clears the mind and cleanses the soul."
+    },
+    {
+      "name": "Pocketwatch",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Whenever you play 3 or less cards during your turn, draw 3 additional cards at the start of your next turn.",
+      "flavor_text": "The hands seem stuck on the 3 o'clock position."
+    },
+    {
+      "name": "Prayer Wheel",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Normal enemies drop an additional card reward.",
+      "flavor_text": "The wheel continues to spin, never stopping."
+    },
+    {
+      "name": "Shovel",
+      "tier": "Rare",
+      "pool": "",
+      "description": "You can now Dig for relics at Rest Sites.",
+      "flavor_text": "The Spire houses all number of relics from past civilizations and powerful adventurers lost to time. Time to go dig them up!"
+    },
+    {
+      "name": "Stone Calendar",
+      "tier": "Rare",
+      "pool": "",
+      "description": "At the end of turn 7, deal 52 damage to ALL enemies.",
+      "flavor_text": "The passage of time is imperceptible in the Spire."
+    },
+    {
+      "name": "The Specimen",
+      "tier": "Rare",
+      "pool": "Green",
+      "description": "Whenever an enemy dies, transfer any Poison it has to a random enemy.",
+      "flavor_text": "\"Fascinating! I found a mutated creature demonstrating astounding toxic properties. Storing a sample for later examination.\" - Ranwid"
+    },
+    {
+      "name": "Thread and Needle",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Start each combat with 4 Plated Armor.",
+      "flavor_text": "Wrapping the magical thread around your body, you feel harder to the touch."
+    },
+    {
+      "name": "Tingsha",
+      "tier": "Rare",
+      "pool": "Green",
+      "description": "Whenever you discard a card during your turn, deal 3 damage to a random enemy.",
+      "flavor_text": "The sound this instrument generates seems to be capable of reverberating to painful levels of volume."
+    },
+    {
+      "name": "Torii",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Whenever you would receive 5 or less unblocked attack damage, reduce it to 1.",
+      "flavor_text": "Holding the small Torii, you feel a sense of calm and safety drift through your mind."
+    },
+    {
+      "name": "Tough Bandages",
+      "tier": "Rare",
+      "pool": "Green",
+      "description": "Whenever you discard a card during your turn, gain 3 Block.",
+      "flavor_text": "Loss gives strength."
+    },
+    {
+      "name": "Tungsten Rod",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Whenever you would lose HP, lose 1 less.",
+      "flavor_text": "It's very very heavy."
+    },
+    {
+      "name": "Turnip",
+      "tier": "Rare",
+      "pool": "",
+      "description": "You can no longer become Frail.",
+      "flavor_text": "Best with Ginger."
+    },
+    {
+      "name": "Unceasing Top",
+      "tier": "Rare",
+      "pool": "",
+      "description": "Whenever you have no cards in hand during your turn, draw a card.",
+      "flavor_text": "The top continues to spin effortlessly as if you were in a dream."
+    },
+    {
+      "name": "Wing Boots",
+      "tier": "Rare",
+      "pool": "",
+      "description": "You may ignore paths when choosing the next room to travel to 3 times.",
+      "flavor_text": "Stylish."
+    }
+  ]
+}

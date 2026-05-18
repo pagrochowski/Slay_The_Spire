@@ -1,0 +1,72 @@
+{
+  "_meta": {
+    "file": "enemies_act2_bosses.json",
+    "description": "Act 2 boss fights with full move patterns and strategy from wiki",
+    "usage": "Load when: planning boss fight in Act 2, asking about Act 2 bosses",
+    "count": 3,
+    "last_updated": "2026-05-14"
+  },
+  "bosses": [
+    {
+      "name": "Bronze Automaton",
+      "type": "BOSS",
+      "act": 2,
+      "hp_range": [
+        300,
+        320
+      ],
+      "mechanics": [
+        "Has 3 Artifact charges (blocks debuffs)",
+        "Spawns Bronze Orbs that steal cards via Stasis",
+        "Pattern: Flail → Boost → Flail → Boost → HYPER BEAM (45-50 dmg) → Stunned",
+        "Bronze Orbs can buff boss or attack"
+      ],
+      "strategy_tips": [
+        "Artifact blocks debuffs - prioritize frontload damage over debuffs",
+        "Kill Bronze Orbs quickly to recover stolen cards",
+        "Save block for 45-50 damage Hyper Beam",
+        "Consistent block needed for Boost + Flail combos"
+      ]
+    },
+    {
+      "name": "The Champ",
+      "type": "BOSS",
+      "act": 2,
+      "hp_range": [
+        420,
+        440
+      ],
+      "mechanics": [
+        "Phase 1: Random attacks, Taunt every 4 turns, gains Metallicize",
+        "Phase 2 (50% HP): Executes for massive damage, then Execute every 3 turns",
+        "Face Slap applies Vulnerable and Frail"
+      ],
+      "strategy_tips": [
+        "Either burst him down fast before Execute, or prepare massive block",
+        "Execute timing is predictable - save block/intangible",
+        "Metallicize scales - finish fight before it stacks too high",
+        "Manage Vulnerable/Frail debuffs from Face Slap"
+      ]
+    },
+    {
+      "name": "The Collector",
+      "type": "BOSS",
+      "act": 2,
+      "hp_range": [
+        282,
+        300
+      ],
+      "mechanics": [
+        "Spawns up to 2 Torch Heads (minions)",
+        "Mega Debuff on turn 4 (Weak, Vulnerable, Frail)",
+        "Torch Heads attack and buff The Collector"
+      ],
+      "strategy_tips": [
+        "Kill Torch Heads or focus boss - don't let them accumulate",
+        "Multi-target damage helps manage minions",
+        "Prepare for Mega Debuff on turn 4",
+        "Minions buff boss - prioritize AoE or focus fire"
+      ]
+    }
+  ]
+}

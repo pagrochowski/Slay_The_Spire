@@ -1,0 +1,151 @@
+{
+  "_meta": {
+    "file": "relics_shop.json",
+    "description": "Shop pool relics",
+    "usage": "Load when: evaluating shop relics, checking relic rewards",
+    "count": 20,
+    "last_updated": "2026-05-14"
+  },
+  "relics": [
+    {
+      "name": "Brimstone",
+      "tier": "Shop",
+      "pool": "Red",
+      "description": "At the start of your turn, gain 2 Strength and ALL enemies gain 1 Strength.",
+      "flavor_text": "Emanates an infernal heat."
+    },
+    {
+      "name": "Cauldron",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Upon pickup, brews 5 random potions.",
+      "flavor_text": "The Merchant is actually a rather skilled potion brewer. Buy 4 get 1 free."
+    },
+    {
+      "name": "Chemical X",
+      "tier": "Shop",
+      "pool": "",
+      "description": "The effects of your cost X cards are increased by 2.",
+      "flavor_text": "WARNING: Do not combine with sugar, spice, and everything nice."
+    },
+    {
+      "name": "Clockwork Souvenir",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Start each combat with 1 Artifact.",
+      "flavor_text": "\"So many intricate gears.\""
+    },
+    {
+      "name": "Dolly's Mirror",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Upon pickup, obtain an additional copy of a card in your deck.",
+      "flavor_text": "\"I look funny in this.\""
+    },
+    {
+      "name": "Frozen Eye",
+      "tier": "Shop",
+      "pool": "",
+      "description": "When viewing your Draw Pile, the cards are now shown in order.",
+      "flavor_text": "Staring into the eye, you see a glimpse of your future."
+    },
+    {
+      "name": "Hand Drill",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Whenever you break an enemy's Block, apply 2 Vulnerable.",
+      "flavor_text": "\"Spirals are dangerous.\""
+    },
+    {
+      "name": "Lee's Waffle",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Upon pickup, raise your Max HP by 7 and heal all of your HP.",
+      "flavor_text": "\"Tastiest treat you will find in all the Spire! Baked today just for you.\""
+    },
+    {
+      "name": "Medical Kit",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Unplayable Status cards can now be played. Whenever you play a Status card, Exhaust it.",
+      "flavor_text": "\"Has everything you need! Anti-itch, anti-burn, anti-venom, and more!\""
+    },
+    {
+      "name": "Melange",
+      "tier": "Shop",
+      "pool": "Purple",
+      "description": "Whenever you shuffle your draw pile, Scry 3.",
+      "flavor_text": "Mysterious sands from an unknown origin. Smells of cinnamon."
+    },
+    {
+      "name": "Membership Card",
+      "tier": "Shop",
+      "pool": "",
+      "description": "50% discount on all products!",
+      "flavor_text": "\"Bonus membership offer for my most valuable customers!\""
+    },
+    {
+      "name": "Orange Pellets",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Whenever you play a Power, Attack, and Skill in the same turn, remove all of your debuffs.",
+      "flavor_text": "\"Made from various fungi found throughout the Spire, they will stave off any affliction.\""
+    },
+    {
+      "name": "Orrery",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Upon pickup, choose and add 5 cards to your deck.",
+      "flavor_text": "\"Once you understand the universe...\" - Zoroth"
+    },
+    {
+      "name": "Prismatic Shard",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Combat reward screens now contain Colorless cards and cards from other colors.",
+      "flavor_text": "Looking through the shard, you are able to see entirely new perspectives."
+    },
+    {
+      "name": "Runic Capacitor",
+      "tier": "Shop",
+      "pool": "Blue",
+      "description": "Start each combat with 3 additional Orb slots.",
+      "flavor_text": "More is better."
+    },
+    {
+      "name": "Sling of Courage",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Start each Elite combat with 2 Strength.",
+      "flavor_text": "\"A handy tool for dealing with particularly tough opponents.\""
+    },
+    {
+      "name": "Strange Spoon",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Cards which Exhaust when played will instead discard 50% of the time.",
+      "flavor_text": "Staring at the spoon, it appears to bend and twist around before your eyes."
+    },
+    {
+      "name": "The Abacus",
+      "tier": "Shop",
+      "pool": "",
+      "description": "Whenever you shuffle your draw pile, gain 6 Block.",
+      "flavor_text": "\"One...Two...Three...\""
+    },
+    {
+      "name": "Toolbox",
+      "tier": "Shop",
+      "pool": "",
+      "description": "At the start of each combat, choose 1 of 3 random Colorless cards and add the chosen card into your hand.",
+      "flavor_text": "A tool for every job."
+    },
+    {
+      "name": "Twisted Funnel",
+      "tier": "Shop",
+      "pool": "Green",
+      "description": "At the start of each combat, apply 4 Poison to ALL enemies.",
+      "flavor_text": "\"I wouldn't drink out of it.\""
+    }
+  ]
+}

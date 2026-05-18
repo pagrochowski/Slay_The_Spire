@@ -1,0 +1,263 @@
+{
+  "_meta": {
+    "file": "potions.json",
+    "description": "All potions with descriptions and effects",
+    "usage": "Load when: asking about potions, evaluating potion rewards",
+    "count": 42,
+    "last_updated": "2026-05-14"
+  },
+  "potions": [
+    {
+      "name": "Ambrosia",
+      "rarity": "Rare",
+      "description": "Enter Divinity Stance.",
+      "mod": ""
+    },
+    {
+      "name": "Ancient Potion",
+      "rarity": "Uncommon",
+      "description": "Gain 1 Artifact.",
+      "mod": ""
+    },
+    {
+      "name": "Attack Potion",
+      "rarity": "Common",
+      "description": "Choose 1 of 3 random Attack cards to add to your hand, it costs 0 this turn.",
+      "mod": ""
+    },
+    {
+      "name": "Blessing of the Forge",
+      "rarity": "Common",
+      "description": "Upgrade all cards in your hand for the rest of combat.",
+      "mod": ""
+    },
+    {
+      "name": "Block Potion",
+      "rarity": "Common",
+      "description": "Gain 12 Block.",
+      "mod": ""
+    },
+    {
+      "name": "Blood Potion",
+      "rarity": "Common",
+      "description": "Heal for 20% of your Max HP.",
+      "mod": ""
+    },
+    {
+      "name": "Bottled Miracle",
+      "rarity": "Common",
+      "description": "Add 2 Miracles to your hand.",
+      "mod": ""
+    },
+    {
+      "name": "Colorless Potion",
+      "rarity": "Common",
+      "description": "Choose 1 of 3 random Colorless cards to add to your hand, it costs 0 this turn.",
+      "mod": ""
+    },
+    {
+      "name": "Cultist Potion",
+      "rarity": "Rare",
+      "description": "Gain 1 Ritual.",
+      "mod": ""
+    },
+    {
+      "name": "Cunning Potion",
+      "rarity": "Uncommon",
+      "description": "Add 3 Shiv+ to your hand.",
+      "mod": ""
+    },
+    {
+      "name": "Dexterity Potion",
+      "rarity": "Common",
+      "description": "Gain 2 Dexterity.",
+      "mod": ""
+    },
+    {
+      "name": "Distilled Chaos",
+      "rarity": "Uncommon",
+      "description": "Play the top 3 cards of your draw pile.",
+      "mod": ""
+    },
+    {
+      "name": "Duplication Potion",
+      "rarity": "Uncommon",
+      "description": "This turn, your next card is played twice.",
+      "mod": ""
+    },
+    {
+      "name": "Elixir",
+      "rarity": "Uncommon",
+      "description": "Exhaust any number of cards in your hand.",
+      "mod": ""
+    },
+    {
+      "name": "Energy Potion",
+      "rarity": "Common",
+      "description": "Gain 2 Energy.",
+      "mod": ""
+    },
+    {
+      "name": "Entropic Brew",
+      "rarity": "Rare",
+      "description": "Fill all your empty potion slots with random potions.",
+      "mod": ""
+    },
+    {
+      "name": "Essence Of Darkness",
+      "rarity": "Rare",
+      "description": "Channel 1 Dark for each orb slot.",
+      "mod": ""
+    },
+    {
+      "name": "Essence of Steel",
+      "rarity": "Uncommon",
+      "description": "Gain 4 Plated Armor.",
+      "mod": ""
+    },
+    {
+      "name": "Explosive Potion",
+      "rarity": "Common",
+      "description": "Deal 10 damage to ALL enemies.",
+      "mod": ""
+    },
+    {
+      "name": "Fairy in a Bottle",
+      "rarity": "Rare",
+      "description": "When you would die, heal to 30% of your Max HP instead and discard this potion.",
+      "mod": ""
+    },
+    {
+      "name": "Fear Potion",
+      "rarity": "Common",
+      "description": "Apply 3 Vulnerable.",
+      "mod": ""
+    },
+    {
+      "name": "Fire Potion",
+      "rarity": "Common",
+      "description": "Deal 20 damage.",
+      "mod": ""
+    },
+    {
+      "name": "Flex Potion",
+      "rarity": "Common",
+      "description": "Gain 5 Strength. At the end of your turn, lose 5 Strength.",
+      "mod": ""
+    },
+    {
+      "name": "Focus Potion",
+      "rarity": "Common",
+      "description": "Gain 2 Focus.",
+      "mod": ""
+    },
+    {
+      "name": "Fruit Juice",
+      "rarity": "Rare",
+      "description": "Gain 5 Max HP.",
+      "mod": ""
+    },
+    {
+      "name": "Gambler's Brew",
+      "rarity": "Uncommon",
+      "description": "Discard any number of cards then draw that many.",
+      "mod": ""
+    },
+    {
+      "name": "Ghost in a Jar",
+      "rarity": "Rare",
+      "description": "Gain 1 Intangible.",
+      "mod": ""
+    },
+    {
+      "name": "Heart of Iron",
+      "rarity": "Rare",
+      "description": "Gain 6 Metallicize.",
+      "mod": ""
+    },
+    {
+      "name": "Liquid Bronze",
+      "rarity": "Uncommon",
+      "description": "Gain 3 Thorns.",
+      "mod": ""
+    },
+    {
+      "name": "Liquid Memories",
+      "rarity": "Uncommon",
+      "description": "Choose a card in your discard pile and return it to your hand. It costs 0 this turn.",
+      "mod": ""
+    },
+    {
+      "name": "Poison Potion",
+      "rarity": "Common",
+      "description": "Apply 6 Poison.",
+      "mod": ""
+    },
+    {
+      "name": "Potion Of Capacity",
+      "rarity": "Uncommon",
+      "description": "Gain 2 Orb slots.",
+      "mod": ""
+    },
+    {
+      "name": "Power Potion",
+      "rarity": "Common",
+      "description": "Choose 1 of 3 random Power cards to add to your hand, it costs 0 this turn.",
+      "mod": ""
+    },
+    {
+      "name": "Regen Potion",
+      "rarity": "Uncommon",
+      "description": "Gain 5 Regen.",
+      "mod": ""
+    },
+    {
+      "name": "Skill Potion",
+      "rarity": "Common",
+      "description": "Choose 1 of 3 random Skill cards to add to your hand, it costs 0 this turn.",
+      "mod": ""
+    },
+    {
+      "name": "Smoke Bomb",
+      "rarity": "Rare",
+      "description": "Escape from a non-boss combat. Receive no rewards.",
+      "mod": ""
+    },
+    {
+      "name": "Snecko Oil",
+      "rarity": "Rare",
+      "description": "Draw 5 cards. Randomize the cost of cards in your hand.",
+      "mod": ""
+    },
+    {
+      "name": "Speed Potion",
+      "rarity": "Common",
+      "description": "Gain 5 Dexterity. At the end of your turn, lose 5 Dexterity.",
+      "mod": ""
+    },
+    {
+      "name": "Stance Potion",
+      "rarity": "Uncommon",
+      "description": "Enter Calm or Wrath.",
+      "mod": ""
+    },
+    {
+      "name": "Strength Potion",
+      "rarity": "Common",
+      "description": "Gain 2 Strength.",
+      "mod": ""
+    },
+    {
+      "name": "Swift Potion",
+      "rarity": "Common",
+      "description": "Draw 3 cards.",
+      "mod": ""
+    },
+    {
+      "name": "Weak Potion",
+      "rarity": "Common",
+      "description": "Apply 3 Weak.",
+      "mod": ""
+    }
+  ]
+}

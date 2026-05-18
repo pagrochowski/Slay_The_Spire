@@ -25,57 +25,92 @@ from src.advisor.run_manager import RunManager, format_deck_counts
 
 
 class KnowledgeBase:
-    """Local knowledge base loaded from JSON files."""
+    """Local knowledge base loaded from split JSON files in data/knowledge/.
+    
+    Knowledge organization is documented in data/knowledge/KNOWLEDGE_MAP.md
+    which serves as the master index for all game data files.
+    """
     
     def __init__(self, data_dir: Path = None):
-        self.data_dir = data_dir or PROJECT_ROOT / "data" / "raw"
+        self.data_dir = data_dir or PROJECT_ROOT / "data" / "knowledge"
         self.cards = {}
         self.relics = {}
         self.potions = {}
         self.archetypes = {}
+        self.bosses = {}  # Boss strategy data from raw/bosses.json
         self._load_data()
     
+    def _load_split_json(self, pattern: str) -> List[Dict]:
+        """Load data from multiple JSON files matching a pattern."""
+        items = []
+        for filepath in self.data_dir.glob(pattern):
+            try:
+                with open(filepath, encoding="utf-8") as f:
+                    data = json.load(f)
+                    # Extract items from the data field (skip _meta)
+                    if "cards" in data:
+                        items.extend(data["cards"])
+                    elif "relics" in data:
+                        items.extend(data["relics"])
+                    elif "enemies" in data:
+                        items.extend(data["enemies"])
+                    elif "potions" in data:
+                        items.extend(data["potions"])
+            except Exception as e:
+                logger.warning(f"Failed to load {filepath}: {e}")
+        return items
+    
     def _load_data(self):
-        """Load all data from JSON files."""
-        # Load cards
-        cards_file = self.data_dir / "cards.json"
-        if cards_file.exists():
-            with open(cards_file, encoding="utf-8") as f:
-                cards_list = json.load(f)
-                for card in cards_list:
-                    name = card.get("name", "").lower()
-                    if name:
-                        self.cards[name] = card
-            logger.info(f"Loaded {len(self.cards)} cards")
+        """Load all data from knowledge base JSON files.
         
-        # Load relics
-        relics_file = self.data_dir / "relics.json"
-        if relics_file.exists():
-            with open(relics_file, encoding="utf-8") as f:
-                relics_list = json.load(f)
-                for relic in relics_list:
-                    name = relic.get("name", "").lower()
-                    if name:
-                        self.relics[name] = relic
-            logger.info(f"Loaded {len(self.relics)} relics")
+        File organization is documented in data/knowledge/KNOWLEDGE_MAP.md
+        """
+        # Load all cards from split files (cards/*.json)
+        cards_list = self._load_split_json("cards/*.json")
+        for card in cards_list:
+            name = card.get("name", "").lower()
+            if name:
+                self.cards[name] = card
+        logger.info(f"Loaded {len(self.cards)} cards from split files")
         
-        # Load potions
+        # Load all relics from split files (relics/*.json)
+        relics_list = self._load_split_json("relics/*.json")
+        for relic in relics_list:
+            name = relic.get("name", "").lower()
+            if name:
+                self.relics[name] = relic
+        logger.info(f"Loaded {len(self.relics)} relics from split files")
+        
+        # Load potions (single file)
         potions_file = self.data_dir / "potions.json"
         if potions_file.exists():
             with open(potions_file, encoding="utf-8") as f:
-                potions_list = json.load(f)
+                data = json.load(f)
+                potions_list = data.get("potions", [])
                 for potion in potions_list:
                     name = potion.get("name", "").lower()
                     if name:
                         self.potions[name] = potion
             logger.info(f"Loaded {len(self.potions)} potions")
         
-        # Load archetypes
+        # Load archetypes (single file)
         archetypes_file = self.data_dir / "archetypes.json"
         if archetypes_file.exists():
             with open(archetypes_file, encoding="utf-8") as f:
-                self.archetypes = json.load(f)
+                data = json.load(f)
+                self.archetypes = data.get("archetypes", {})
             logger.info(f"Loaded archetypes for {len(self.archetypes)} characters")
+        
+        # Load boss strategies from raw/bosses.json (manually curated, not in knowledge/)
+        bosses_file = PROJECT_ROOT / "data" / "raw" / "bosses.json"
+        if bosses_file.exists():
+            with open(bosses_file, encoding="utf-8") as f:
+                bosses_data = json.load(f)
+                # Flatten act-based structure for easier lookup
+                for act_bosses in bosses_data.values():
+                    for boss_name, boss_info in act_bosses.items():
+                        self.bosses[boss_name] = boss_info
+            logger.info(f"Loaded {len(self.bosses)} boss strategies from raw/bosses.json")
     
     def find_cards(self, query: str, limit: int = 5) -> list:
         """Find cards matching a query using fuzzy matching."""
@@ -147,6 +182,39 @@ class KnowledgeBase:
             parts.append(f"Flavor: {relic['flavor']}")
         return "\n".join(parts)
     
+    def get_boss_info(self, boss_name: str) -> Optional[str]:
+        """Get boss strategy as formatted text."""
+        # Try exact match first
+        if boss_name in self.bosses:
+            boss_data = self.bosses[boss_name]
+            # Check if it's new JSON format or legacy text
+            if isinstance(boss_data, dict) and "strategy_tips" in boss_data:
+                # New JSON format - format nicely
+                tips = "\n".join([f"- {tip}" for tip in boss_data["strategy_tips"]])
+                mechanics = "\n".join([f"- {mech}" for mech in boss_data["mechanics"]])
+                return f"Mechanics:\n{mechanics}\n\nStrategy:\n{tips}"
+            elif isinstance(boss_data, dict) and "raw_text" in boss_data:
+                # Legacy text format
+                return boss_data["raw_text"]
+            else:
+                # Old format (direct string)
+                return str(boss_data)
+        
+        # Try case-insensitive match
+        boss_lower = boss_name.lower()
+        for name, info in self.bosses.items():
+            if name.lower() == boss_lower:
+                if isinstance(info, dict) and "strategy_tips" in info:
+                    tips = "\n".join([f"- {tip}" for tip in info["strategy_tips"]])
+                    mechanics = "\n".join([f"- {mech}" for mech in info["mechanics"]])
+                    return f"Mechanics:\n{mechanics}\n\nStrategy:\n{tips}"
+                elif isinstance(info, dict) and "raw_text" in info:
+                    return info["raw_text"]
+                else:
+                    return str(info)
+        
+        return None
+    
     def extract_mentioned_items(self, text: str) -> dict:
         """Extract card/relic names mentioned in text using word boundary matching."""
         import re
@@ -210,29 +278,8 @@ class KnowledgeBase:
         return scores[:3]
 
 
-# Boss strategies by act
-BOSSES = {
-    1: {
-        "Slime Boss": "Splits at 50% HP into 2 Large Slimes. Focus damage to kill before split, or prepare for multi-target.",
-        "The Guardian": "Alternates between offensive and defensive mode. Save damage for offensive mode, block during defensive.",
-        "Hexaghost": "6 attacks then big hit. Need good block for Inferno. Attacks scale each cycle."
-    },
-    2: {
-        "Champ": "Executes at 50% HP for big damage. Either burst him down fast or be ready to block Execute.",
-        "Collector": "Spawns minions. Kill minions or they buff him. Multi-target helps.",
-        "Automaton": "Artifact charges block debuffs. High damage output, needs consistent block."
-    },
-    3: {
-        "Awakened One": "Gains Strength when you play Powers in phase 1. Save Powers for phase 2 if possible.",
-        "Time Eater": "Ends your turn after 12 cards. Plan turns carefully, value high-impact single cards.",
-        "Donu and Deca": "Kill Donu first (scaling). Deca blocks and removes debuffs."
-    },
-    4: {
-        "Corrupt Heart": "200 HP, massive damage. Need huge scaling and at least 2 of 3 keys.",
-        "Spire Shield": "Appears with Heart. Kill or ignore based on deck.",
-        "Spire Spear": "Appears with Heart. Usually kill first for less damage taken."
-    }
-}
+# Boss strategies loaded from data/knowledge/enemies/ and data/raw/bosses.json
+# No hardcoded boss data - all comes from knowledge base
 
 
 class GroqAdvisor:
@@ -296,8 +343,10 @@ class GroqAdvisor:
         
         # Configure Groq client
         self.client = Groq(api_key=api_key)
-        self.model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
-        self.fallback_model = os.getenv("GROQ_FALLBACK_MODEL", "llama-3.1-8b-instant")
+        # Primary: openai/gpt-oss-120b (fast, high quality)
+        # Fallback: llama-3.3-70b-versatile (reliable alternative)
+        self.model = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+        self.fallback_model = os.getenv("GROQ_FALLBACK_MODEL", "llama-3.3-70b-versatile")
         
         # Conversation context for follow-up questions
         self.last_card_choices: List[str] = []  # Cards from last card_choice question
@@ -319,6 +368,16 @@ class GroqAdvisor:
     
     def _get_system_prompt(self) -> str:
         return """You are an expert Slay the Spire advisor helping a player during their run.
+
+KNOWLEDGE BASE:
+All game data is organized in data/knowledge/ directory (see KNOWLEDGE_MAP.md for complete index).
+The knowledge base contains 30 split JSON files with comprehensive data:
+- Cards: 5 files split by character (365 total cards)
+- Relics: 6 files split by rarity pool (178 total relics)
+- Enemies: 9 files split by act and difficulty (37 total enemies with strategies)
+- Other: potions, keywords, archetypes, ascension modifiers
+Each file includes _meta fields with LLM-friendly descriptions.
+Load only what's needed based on current context (character, act, query type).
 
 CRITICAL RULES:
 1. ONLY use information from [RUN STATE] - never make up or assume deck contents
@@ -437,12 +496,28 @@ Acknowledge briefly."""
                 
                 return (content or "").strip()
         except Exception as e:
+            error_str = str(e)
             logger.error(f"Groq API error ({model}): {e}")
-            # Try fallback on error too
+            
+            # Check if this is a rate limit error
+            is_rate_limit = 'rate_limit' in error_str.lower() or '429' in error_str
+            
+            # On rate limit, try the other model (bidirectional switching)
+            if is_rate_limit:
+                # Switch to the other model
+                other_model = self.fallback_model if model == self.model else self.model
+                logger.warning(f"Rate limit on {model}, switching to {other_model}...")
+                # Force use of the other model by adjusting retry_count
+                new_retry = 1 if model == self.model else 0
+                return self._call_groq(messages, stream=False, retry_count=new_retry)
+            
+            # For non-rate-limit errors, try fallback once
             if retry_count < 1:
                 logger.warning(f"Error with {model}, trying fallback...")
                 return self._call_groq(messages, stream=False, retry_count=retry_count + 1)
-            raise
+            
+            # If both models failed, raise simplified error
+            raise Exception("API error")
     
     def _build_run_context(self) -> str:
         """Build detailed run context string."""
@@ -470,9 +545,15 @@ Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emeral
         # Add boss info if set
         boss = run.get("current_boss")
         if boss:
-            act = run.get("act", 1)
-            boss_info = BOSSES.get(act, {}).get(boss, "")
-            context += f"\n[CURRENT BOSS] {boss}: {boss_info}"
+            # Use loaded boss strategy from knowledge base
+            boss_info = self.kb.get_boss_info(boss)
+            if boss_info:
+                # Truncate to first 300 chars for context
+                boss_summary = boss_info[:300] + "..." if len(boss_info) > 300 else boss_info
+                context += f"\n[CURRENT BOSS] {boss}: {boss_summary}"
+            else:
+                # If not in knowledge base, note it but don't fail
+                context += f"\n[CURRENT BOSS] {boss} (data not loaded)"
         
         # Detect and add archetype hints
         character = run['character'].lower()
@@ -485,10 +566,10 @@ Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emeral
             if hints:
                 context += f"\n[ARCHETYPE HINTS] Deck trends toward: {'; '.join(hints)}"
         
-        # Add recent events for context
+        # Add recent events for context (no floor numbers since they're not always updated)
         recent_events = self.run_manager.get_recent_events(run, count=3)
         if recent_events:
-            events_str = " | ".join([f"F{e['floor']}: {e['details']}" for e in recent_events])
+            events_str = " | ".join([e['details'] for e in recent_events])
             context += f"\nRecent: {events_str}"
         
         return context
@@ -602,7 +683,7 @@ Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emeral
             
         except Exception as e:
             logger.error(f"Groq API error: {e}")
-            return f"Sorry, I encountered an error: {str(e)}"
+            return "Sorry, encountered error."
     
     def _extract_strategy_updates(self, response: str) -> str:
         """Extract strategy updates from model response and save them."""
@@ -678,20 +759,20 @@ Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emeral
         # Get best match
         score, _, card_data = matches[0]
         actual_name = card_data["name"]
-        card_color = card_data.get("color", "Colorless")
+        card_color = card_data.get("color", "Colorless").upper()  # Normalize to uppercase
         
         # Check if card matches current character or is colorless
         char = run["character"]
-        char_color = self.COLOR_MAP.get(char, "Red")
+        char_color = self.COLOR_MAP.get(char, "Red").upper()  # Normalize to uppercase
         
         # Remove + suffix for base card matching
         base_name = actual_name.rstrip('+')
         
-        if card_color != "Colorless" and card_color != char_color:
+        if card_color != "COLORLESS" and card_color != char_color:
             # Wrong class card - suggest alternatives
             valid_matches = [
                 (s, n, c) for s, n, c in matches 
-                if c.get("color") in [char_color, "Colorless"]
+                if c.get("color", "Colorless").upper() in [char_color, "COLORLESS"]
             ]
             if valid_matches:
                 suggestions = ", ".join([c["name"] for _, _, c in valid_matches[:3]])
@@ -707,6 +788,10 @@ Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emeral
         run = self.run_manager.add_card(base_name if not actual_name.endswith('+') else actual_name)
         if run:
             deck = self.run_manager.get_full_deck(run)
+            
+            # Auto-update strategy after significant card addition
+            self.adjust_strategy(silent=True)
+            
             return f"Added {actual_name}. Deck now has {len(deck)} cards."
         return "Failed to add card."
     
@@ -721,6 +806,10 @@ Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emeral
         run = self.run_manager.remove_card(actual_name)
         if run:
             deck = self.run_manager.get_full_deck(run)
+            
+            # Auto-update strategy after card removal
+            self.adjust_strategy(silent=True)
+            
             return f"Removed {actual_name}. Deck now has {len(deck)} cards."
         return "Failed to remove card."
     
@@ -744,13 +833,26 @@ Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emeral
         
         run = self.run_manager.add_relic(actual_name)
         if run:
+            # Auto-update strategy after relic addition (relics can change deck strategy significantly)
+            self.adjust_strategy(silent=True)
+            
             return f"Added {actual_name}. You have {len(run['relics'])} relics."
         return "Failed to add relic."
     
-    def update_floor(self, floor: int) -> str:
-        """Update current floor."""
-        run = self.run_manager.advance_floor(floor)
+    def update_floor(self, floor: int, act: int = None) -> str:
+        """Update current floor (and optionally act)."""
+        run = self.run_manager.get_active_run()
+        if not run:
+            return "No active run."
+        
+        old_act = run.get('act', 1)
+        run = self.run_manager.advance_floor(floor, new_act=act)
         if run:
+            # Auto-update strategy if act changed (new enemies, different priorities)
+            new_act = run.get('act', 1)
+            if new_act != old_act:
+                self.adjust_strategy(silent=True)
+            
             return f"Now on Floor {run['floor']}, Act {run['act']}."
         return "No active run."
     
@@ -796,6 +898,97 @@ Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emeral
         
         return status
     
+    def create_summary_file(self, silent: bool = False) -> str:
+        """Export detailed run summary to a markdown file for LLM consumption."""
+        run = self.run_manager.get_active_run()
+        if not run:
+            return "" if silent else "No active run to summarize."
+        
+        deck = self.run_manager.get_full_deck(run)
+        deck_str = format_deck_counts(deck)
+        
+        # Build comprehensive markdown summary
+        summary = f"""# Slay the Spire Run Summary
+
+## Run Information
+- **Character**: {run['character'].title()}
+- **Ascension**: {run['ascension']}
+- **Act**: {run['act']}
+- **Floor**: {run['floor']}
+
+## Current Status
+- **HP**: {run['hp']}/{run['max_hp']}
+- **Gold**: {run['gold']}
+
+## Deck ({len(deck)} cards)
+{deck_str}
+
+## Relics
+{chr(10).join(f'- {relic}' for relic in run['relics']) if run['relics'] else '- None'}
+
+## Potions
+{chr(10).join(f'- {potion}' for potion in run['potions']) if run['potions'] else '- None'}
+
+## Keys
+- Ruby: {'✓' if run['keys']['ruby'] else '✗'}
+- Emerald: {'✓' if run['keys']['emerald'] else '✗'}
+- Sapphire: {'✓' if run['keys']['sapphire'] else '✗'}
+"""
+        
+        # Add boss info if set
+        boss_name = run.get('current_boss')
+        if boss_name:
+            summary += f"\n## Current Boss\n**{boss_name}**\n"
+        
+        # Add strategy notes
+        strategy = run.get("strategy", [])
+        if strategy:
+            summary += f"\n## Strategy Notes\n"
+            summary += "\n".join(f"- {note}" for note in strategy) + "\n"
+        
+        # Add strategy sections (will be populated by adjust_strategy)
+        summary += f"\n## Long-Term Goals\n"
+        summary += f"*Strategy will be analyzed when you update strategy or make deck changes.*\n"
+        
+        summary += f"\n## Short-Term Problems\n"
+        summary += f"*Strategy will be analyzed when you update strategy or make deck changes.*\n"
+        
+        summary += f"\n## Card Priorities\n"
+        summary += f"*Strategy will be analyzed when you update strategy or make deck changes.*\n"
+        
+        # Add archetype hints
+        character = run['character'].lower()
+        archetype_scores = self.kb.detect_archetype_from_deck(character, deck)
+        if archetype_scores:
+            summary += f"\n## Detected Archetype Tendencies\n"
+            for name, score, matched in archetype_scores:
+                if score >= 3:
+                    summary += f"- **{name}** (score: {score}, matched: {', '.join(matched[:5])})\n"
+        
+        # Add recent events (without floor numbers since they're not always updated)
+        recent_events = self.run_manager.get_recent_events(run, count=10)
+        if recent_events:
+            summary += f"\n## Recent Events\n"
+            for event in recent_events:
+                # Just show the details without floor number
+                summary += f"- {event['details']}\n"
+        
+        # Add card recommendations context
+        summary += f"\n---\n\n**This summary was generated for strategic decision-making.**\n"
+        summary += f"**You can ask another AI to analyze this run and provide card/relic recommendations.**\n"
+        
+        # Write to file (no floor number in filename)
+        filename = f"run_summary_{run['character']}_A{run['ascension']}.md"
+        filepath = Path(filename)
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(summary)
+        
+        logger.info(f"Created run summary file: {filename}")
+        if silent:
+            return ""
+        return f"Okay, summary file has been created."
+    
     def add_strategy(self, note: str) -> str:
         """Manually add a strategy note."""
         if not self.run_manager.get_active_run():
@@ -817,34 +1010,341 @@ Keys: {'Ruby ' if run['keys']['ruby'] else ''}{'Emerald ' if run['keys']['emeral
             return "No strategy notes yet. The advisor will add them as the run progresses."
         return f"Current strategy: {'; '.join(strategy)}"
     
-    def adjust_strategy(self) -> str:
-        """Ask the AI to analyze the run and suggest/update strategy."""
+    def adjust_strategy(self, silent: bool = False, boss_focus: bool = False) -> str:
+        """Comprehensive strategy update: boss tactics, long-term goals, short-term problems, archetypes."""
         run = self.run_manager.get_active_run()
         if not run:
-            return "No active run."
+            return "" if silent else "No active run."
         
-        # Build a focused prompt for strategy analysis
-        current_strategy = run.get("strategy", [])
-        strategy_str = "; ".join(current_strategy) if current_strategy else "None set"
+        # Get current state
+        deck = self.run_manager.get_full_deck(run)
+        character = run['character'].lower()
+        archetype_scores = self.kb.detect_archetype_from_deck(character, deck)
         
-        prompt = f"""Analyze my current run and suggest an updated strategy.
+        # Format archetype info
+        archetype_hints = []
+        if archetype_scores:
+            for name, score, matched in archetype_scores:
+                if score >= 3:
+                    archetype_hints.append(f"{name} (score: {score}, cards: {', '.join(matched[:3])})")
+        archetype_str = "\n".join([f"  - {hint}" for hint in archetype_hints]) if archetype_hints else "  - No clear archetype yet"
+        
+        # Get boss-specific context if boss is set
+        boss_context = ""
+        boss_name = run.get("current_boss")
+        if boss_name:
+            boss_data = self.kb.bosses.get(boss_name)
+            if boss_data and isinstance(boss_data, dict) and "strategy_tips" in boss_data:
+                mechanics = "\n".join([f"    - {m}" for m in boss_data["mechanics"]])
+                tips = "\n".join([f"    - {t}" for t in boss_data["strategy_tips"]])
+                boss_context = f"""\n\nUPCOMING BOSS: {boss_name}
+  Mechanics:
+{mechanics}
+  
+  Key tactics:
+{tips}"""
+        
+        # Build comprehensive strategy prompt
+        prompt = f"""Analyze my run and provide a COMPLETE strategic overview.
 
-Current strategy notes: {strategy_str}
+DETECTED ARCHETYPES:
+{archetype_str}{boss_context}
 
-Based on my deck, relics, HP, and floor progress, what should my strategic focus be?
-Consider:
-- What synergies exist in my deck?
-- What am I missing (damage, block, scaling, card draw)?
-- What boss am I preparing for?
-- Should I be more aggressive or defensive in card picks?
+Provide a comprehensive strategy update covering ALL of these areas:
 
-Give me 2-3 concise strategy points. End with [STRATEGY UPDATE: "point1"] for each new point (this replaces old strategy)."""
+1. BOSS TACTICS (if boss is set): 
+   - Specific card priorities for THIS BOSS FIGHT ONLY
+   - Defensive/offensive balance needed for THIS BOSS
+   - Move patterns and key threats from THIS BOSS
+   
+2. LONG-TERM GOALS:
+   - What is the win condition for this deck?
+   - What synergies should I build towards?
+   - What scaling do I need?
+
+3. SHORT-TERM PROBLEMS (focus on HALLWAY FIGHTS and GENERAL deck weaknesses, NOT the boss):
+   - What enemy types in hallways/elites is this deck struggling against? (multi-enemy, high HP, status effects, etc.)
+   - What immediate gaps need filling for REGULAR FIGHTS? (AoE, frontload damage, consistent block, card draw)
+   - What cards are dead weight or underperforming in normal encounters?
+
+4. CARD PRIORITIES:
+   - What should I prioritize in card rewards?
+   - What should I skip?
+   - Aggressive or defensive picks?
+
+Be concise but cover ALL 4 areas. Format as bullet points under each section."""
         
         # Clear old strategy before getting new recommendations
         self.run_manager.clear_strategy()
         
         # Use chat_message to get AI analysis with full context
-        return self.chat_message(prompt)
+        result = self.chat_message(prompt)
+        
+        # Update the run summary file with the new strategy
+        self._update_run_summary_strategy(run, result, boss_name)
+        
+        # Extract a brief one-sentence summary for speaking
+        brief_summary = self._extract_brief_summary(result, boss_name)
+        
+        if silent:
+            logger.info("Strategy revised in background")
+            return ""
+        return f"Strategy updated. {brief_summary}"
+    
+    def _extract_brief_summary(self, strategy_text: str, boss_name: str = None) -> str:
+        """Extract a brief, actionable one-sentence summary from the full strategy."""
+        lines = strategy_text.split('\n')
+        
+        # Look for the most actionable advice - prioritize Card Priorities and Short-Term sections
+        # These sections tend to have the most concrete, immediate actions
+        priority_bullets = []
+        short_term_bullets = []
+        boss_bullets = []
+        other_bullets = []
+        
+        current_section = None
+        
+        for line in lines:
+            line_stripped = line.strip()
+            line_lower = line_stripped.lower()
+            
+            # Track which section we're in
+            if 'card' in line_lower and 'priorit' in line_lower:
+                current_section = 'priorities'
+                continue
+            elif 'short' in line_lower and 'term' in line_lower:
+                current_section = 'short'
+                continue
+            elif 'boss' in line_lower and ('tactics' in line_lower or 'strategy' in line_lower):
+                current_section = 'boss'
+                continue
+            elif 'long' in line_lower and 'term' in line_lower:
+                current_section = 'long'
+                continue
+            
+            # Extract meaningful bullet points
+            if line_stripped.startswith(('-', '•', '*')) and len(line_stripped) > 20:
+                bullet = line_stripped.lstrip('-•* ').strip()
+                
+                if current_section == 'priorities':
+                    priority_bullets.append(bullet)
+                elif current_section == 'short':
+                    short_term_bullets.append(bullet)
+                elif current_section == 'boss':
+                    boss_bullets.append(bullet)
+                else:
+                    other_bullets.append(bullet)
+        
+        # Choose the best bullet to speak
+        # Priority: Card Priorities > Short-Term > Boss-specific > Other
+        chosen_bullet = None
+        
+        if priority_bullets:
+            # Look for the first "prioritize" or "focus" bullet
+            for bullet in priority_bullets:
+                if 'prioritiz' in bullet.lower() or 'focus' in bullet.lower() or 'look for' in bullet.lower():
+                    chosen_bullet = bullet
+                    break
+            if not chosen_bullet:
+                chosen_bullet = priority_bullets[0]
+        elif short_term_bullets:
+            # Look for actionable short-term fixes
+            for bullet in short_term_bullets:
+                if 'need' in bullet.lower() or 'lack' in bullet.lower() or 'add' in bullet.lower():
+                    chosen_bullet = bullet
+                    break
+            if not chosen_bullet:
+                chosen_bullet = short_term_bullets[0]
+        elif boss_bullets:
+            chosen_bullet = boss_bullets[0]
+        elif other_bullets:
+            chosen_bullet = other_bullets[0]
+        
+        # Clean up and truncate if needed
+        if chosen_bullet:
+            # Remove markdown formatting
+            chosen_bullet = chosen_bullet.replace('**', '').replace('*', '')
+            chosen_bullet = chosen_bullet.replace('__', '').replace('_', '')
+            
+            # Remove redundant phrases
+            chosen_bullet = chosen_bullet.replace('You should ', '').replace('Try to ', '')
+            chosen_bullet = chosen_bullet.replace('It would be good to ', '').replace('Consider ', '')
+            
+            # Capitalize first letter
+            if chosen_bullet:
+                chosen_bullet = chosen_bullet[0].upper() + chosen_bullet[1:]
+            
+            # Truncate if too long
+            if len(chosen_bullet) > 120:
+                chosen_bullet = chosen_bullet[:120].rsplit(' ', 1)[0] + '...'
+            
+            return chosen_bullet
+        
+        # Fallback: extract something useful from boss context
+        if boss_name:
+            # Try to find a specific tactic
+            for line in lines[:15]:  # Check first 15 lines
+                if line.strip().startswith(('-', '•', '*')) and boss_name.lower() in line.lower():
+                    bullet = line.strip().lstrip('-•* ').strip()
+                    if len(bullet) > 30 and len(bullet) < 120:
+                        return bullet
+            return f"Review the boss tactics for {boss_name} in the summary file."
+        
+        return "Check the run summary file for detailed strategy."
+    
+    def _update_run_summary_strategy(self, run: dict, strategy_text: str, boss_name: str = None):
+        """Update the run summary file with new strategy sections."""
+        filename = f"run_summary_{run['character']}_A{run['ascension']}.md"
+        filepath = Path(filename)
+        
+        if not filepath.exists():
+            # Create summary if it doesn't exist
+            self.create_summary_file(silent=True)
+        
+        # Read existing summary
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Parse strategy text to extract meaningful sections
+        lines = strategy_text.split('\n')
+        
+        # Extract sections more robustly
+        sections = {
+            'boss': [],
+            'long': [],
+            'short': [],
+            'priorities': []
+        }
+        current_section = None
+        
+        for line in lines:
+            line_stripped = line.strip()
+            line_lower = line_stripped.lower()
+            
+            # Detect bullets more precisely: single -, •, or * followed by space
+            is_bullet = (line_stripped.startswith('- ') or 
+                        line_stripped.startswith('• ') or 
+                        (line_stripped.startswith('* ') and not line_stripped.startswith('** ')))
+            
+            # Detect section headers (not bullets, may have ** or ##)
+            if not is_bullet:
+                if ('boss' in line_lower and ('tactics' in line_lower or 'strategy' in line_lower or 'fight' in line_lower)) or (line_lower.startswith('1') and 'boss' in line_lower):
+                    current_section = 'boss'
+                    continue
+                elif ('long' in line_lower and 'term' in line_lower) or (line_lower.startswith('2') and ('long' in line_lower or 'goal' in line_lower)):
+                    current_section = 'long'
+                    continue
+                elif ('short' in line_lower and 'term' in line_lower) or (line_lower.startswith('3') and ('short' in line_lower or 'problem' in line_lower)):
+                    current_section = 'short'
+                    continue
+                elif ('card' in line_lower and 'priorit' in line_lower) or (line_lower.startswith('4') and ('card' in line_lower or 'priorit' in line_lower)):
+                    current_section = 'priorities'
+                    continue
+            
+            # Skip empty lines
+            if not line_stripped:
+                continue
+            
+            # Skip markdown headers (but we already extracted section info above)
+            if line_stripped.startswith('#') and not is_bullet:
+                continue
+            
+            # Add content to current section
+            if current_section and line_stripped:
+                # Clean up and add content
+                if is_bullet:
+                    sections[current_section].append(line_stripped)
+                elif len(line_stripped) > 15 and not line_stripped.endswith(':') and not line_stripped.startswith('**'):  # Avoid headers and single words
+                    # Add as bullet if it looks like content (but not markdown bold headers)
+                    sections[current_section].append('- ' + line_stripped)
+        
+        # Log what we extracted for debugging
+        logger.info(f"📊 Strategy parsing: boss={len(sections['boss'])}, long={len(sections['long'])}, short={len(sections['short'])}, priorities={len(sections['priorities'])}")
+        
+        # Build formatted sections and update file
+        import re
+        
+        # Update Boss Tactics section if we have boss info
+        if boss_name and sections['boss']:
+            boss_tactics_text = '\n'.join(sections['boss'])
+            boss_section = f"""## Boss Tactics
+**Fighting: {boss_name}**
+
+{boss_tactics_text}
+"""
+            if '## Boss Tactics' in content:
+                content = re.sub(
+                    r'## Boss Tactics\n.*?(?=\n## |\Z)',
+                    boss_section.rstrip() + '\n',
+                    content,
+                    flags=re.DOTALL
+                )
+            else:
+                # Insert after Current Boss
+                content = content.replace(
+                    f'## Current Boss\n**{boss_name}**\n',
+                    f'## Current Boss\n**{boss_name}**\n\n{boss_section}'
+                )
+        
+        # Update Long-Term Goals
+        if sections['long']:
+            long_term_text = '\n'.join(sections['long'])
+            long_section = f"""## Long-Term Goals
+{long_term_text}
+"""
+            content = re.sub(
+                r'## Long-Term Goals\n.*?(?=\n## |\Z)',
+                long_section.rstrip() + '\n',
+                content,
+                flags=re.DOTALL
+            )
+        
+        # Update Short-Term Problems
+        if sections['short']:
+            short_term_text = '\n'.join(sections['short'])
+            short_section = f"""## Short-Term Problems
+{short_term_text}
+"""
+            content = re.sub(
+                r'## Short-Term Problems\n.*?(?=\n## |\Z)',
+                short_section.rstrip() + '\n',
+                content,
+                flags=re.DOTALL
+            )
+        
+        # Update Card Priorities
+        if sections['priorities']:
+            priorities_text = '\n'.join(sections['priorities'])
+            priorities_section = f"""## Card Priorities
+{priorities_text}
+"""
+            # Check if section exists
+            if '## Card Priorities' in content:
+                content = re.sub(
+                    r'## Card Priorities\n.*?(?=\n## |\Z)',
+                    priorities_section.rstrip() + '\n',
+                    content,
+                    flags=re.DOTALL
+                )
+            else:
+                # Insert before Detected Archetype Tendencies or Recent Events
+                if '## Detected Archetype Tendencies' in content:
+                    content = content.replace(
+                        '## Detected Archetype Tendencies',
+                        priorities_section + '\n## Detected Archetype Tendencies'
+                    )
+                elif '## Recent Events' in content:
+                    content = content.replace(
+                        '## Recent Events',
+                        priorities_section + '\n## Recent Events'
+                    )
+        
+        # Write updated summary
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        total_items = len(sections['boss']) + len(sections['long']) + len(sections['short']) + len(sections['priorities'])
+        logger.info(f"✅ Updated {filename} with {total_items} strategy items")
 
     def advise_card_removal(self) -> str:
         """Advise which card to remove at a removal event (shop, event)."""
@@ -873,6 +1373,34 @@ Recommend ONE card to remove and explain why in 1-2 sentences."""
         
         return self.chat_message(prompt)
 
+    def advise_card_upgrade(self) -> str:
+        """Advise which card to upgrade at a campfire or shop."""
+        run = self.run_manager.get_active_run()
+        if not run:
+            return "No active run."
+        
+        deck = self.run_manager.get_full_deck(run)
+        if not deck:
+            return "Your deck is empty."
+        
+        # Build a focused prompt for card upgrade advice
+        deck_summary = format_deck_counts(deck)
+        
+        prompt = f"""I can upgrade a card. Which card should I upgrade?
+
+My deck: {deck_summary}
+
+Consider:
+- Upgraded cards are generally stronger (more damage, more block, lower cost, better effects)
+- Prioritize cards I'll play often (attacks, key powers, core combo pieces)
+- Cards with bigger upgrade gains (e.g., Searing Blow scales infinitely, Whirlwind becomes Whirlwind+)
+- My current relics and synergies
+- What boss I'm preparing for
+
+Recommend ONE card to upgrade and explain why in 1-2 sentences."""
+        
+        return self.chat_message(prompt)
+
     def end_run(self, victory: bool = False, cause: str = None) -> str:
         """End the current run."""
         run = self.run_manager.get_active_run()
@@ -894,24 +1422,16 @@ Recommend ONE card to remove and explain why in 1-2 sentences."""
         if not run:
             return "No active run."
         
-        act = run.get("act", 1)
-        act_bosses = BOSSES.get(act, {})
+        # Set boss in run manager
+        self.run_manager.set_boss(boss_name)
         
-        # Try to match boss name
-        boss_name_lower = boss_name.lower()
-        matched_boss = None
-        for boss in act_bosses.keys():
-            if boss_name_lower in boss.lower() or boss.lower() in boss_name_lower:
-                matched_boss = boss
-                break
+        # Automatically generate comprehensive strategy for this boss
+        self.adjust_strategy(silent=True, boss_focus=True)
         
-        if matched_boss:
-            self.run_manager.set_boss(matched_boss)
-            strategy = act_bosses[matched_boss]
-            return f"Boss set to {matched_boss}. {strategy}"
-        else:
-            available = ", ".join(act_bosses.keys())
-            return f"Unknown boss '{boss_name}' for Act {act}. Available: {available}"
+        # Create/update run summary file
+        self.create_run_summary(run, silent=True)
+        
+        return f"Boss set to {boss_name}. Strategy updated in run summary file."
     
     def lookup_card(self, card_name: str) -> str:
         """Look up card info."""

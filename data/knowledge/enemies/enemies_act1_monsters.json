@@ -1,0 +1,360 @@
+{
+  "_meta": {
+    "file": "enemies_act1_monsters.json",
+    "description": "Act 1 normal monsters with stats, patterns, and strategy",
+    "usage": "Load when: in Act 1, planning hallway fights, asking about Act 1 enemies",
+    "count": 9,
+    "last_updated": "2026-05-14"
+  },
+  "monsters": [
+    {
+      "name": "Cultist",
+      "type": "NORMAL",
+      "hp_range": [
+        48,
+        54
+      ],
+      "hp_a7_plus": [
+        50,
+        56
+      ],
+      "move_pattern": [
+        {
+          "turn": 1,
+          "move": "Incantation",
+          "effect": "Gain 3-5 Ritual (Strength each turn)"
+        }
+      ],
+      "mechanics": [
+        "Ritual: Gains Strength at start of turn",
+        "No attacks, only buffs"
+      ],
+      "strategy_tips": [
+        "Kill quickly before Ritual stacks get high",
+        "One of the easiest enemies - good for hallway healing",
+        "Focus damage, don't worry about defense"
+      ],
+      "ascension_changes": {
+        "asc_7": "+2 HP"
+      },
+      "danger_rating": 1
+    },
+    {
+      "name": "Jaw Worm",
+      "type": "NORMAL",
+      "hp_range": [
+        40,
+        44
+      ],
+      "hp_a7_plus": [
+        42,
+        46
+      ],
+      "move_pattern": [
+        {
+          "turn": 1,
+          "move": "Chomp",
+          "damage": 11,
+          "probability": "Always Turn 1"
+        },
+        {
+          "move": "Chomp",
+          "damage": 11,
+          "probability": "45%"
+        },
+        {
+          "move": "Thrash",
+          "damage": 7,
+          "block": 5,
+          "probability": "30%"
+        },
+        {
+          "move": "Bellow",
+          "effect": "Gain 3 Strength + 6 Block",
+          "probability": "25%"
+        }
+      ],
+      "mechanics": [
+        "Uses Bellow early to buff",
+        "Alternates between attacks after Bellow"
+      ],
+      "strategy_tips": [
+        "Front-load damage before it gains Strength from Bellow",
+        "Weak is highly effective",
+        "Block 11+ on Chomp turns",
+        "If it uses Bellow twice, be ready for high damage"
+      ],
+      "ascension_changes": {
+        "asc_2": "+10% damage (12 Chomp, 8 Thrash)",
+        "asc_7": "+2 HP"
+      },
+      "danger_rating": 2
+    },
+    {
+      "name": "Louse",
+      "type": "NORMAL",
+      "hp_range": [
+        10,
+        15
+      ],
+      "hp_a7_plus": [
+        11,
+        16
+      ],
+      "move_pattern": [
+        {
+          "move": "Bite",
+          "damage": [
+            5,
+            7
+          ],
+          "probability": "75%"
+        },
+        {
+          "move": "Spit Web",
+          "effect": "Apply 2 Weak",
+          "probability": "25%"
+        }
+      ],
+      "mechanics": [
+        "33% chance to have Curl Up (3-7 Block when hit)",
+        "Random damage variance"
+      ],
+      "strategy_tips": [
+        "Low HP makes it easy to kill",
+        "Spit Web can be annoying early",
+        "Watch for Curl Up - adds defense"
+      ],
+      "ascension_changes": {
+        "asc_7": "+1 HP"
+      },
+      "danger_rating": 1
+    },
+    {
+      "name": "Fat Gremlin",
+      "type": "NORMAL",
+      "hp_range": [
+        13,
+        17
+      ],
+      "hp_a7_plus": [
+        14,
+        18
+      ],
+      "move_pattern": [
+        {
+          "move": "Smash",
+          "damage": 4,
+          "probability": "100%"
+        }
+      ],
+      "mechanics": [
+        "Weak: Every 4th attack deals 4 damage instead of base"
+      ],
+      "strategy_tips": [
+        "Low threat, easy to kill",
+        "Often appears in groups",
+        "Minimal blocking needed"
+      ],
+      "ascension_changes": {
+        "asc_2": "+1 damage (5)",
+        "asc_7": "+1 HP"
+      },
+      "danger_rating": 1
+    },
+    {
+      "name": "Gremlin Wizard",
+      "type": "NORMAL",
+      "hp_range": [
+        21,
+        25
+      ],
+      "hp_a7_plus": [
+        22,
+        26
+      ],
+      "move_pattern": [
+        {
+          "turn": 1,
+          "move": "Charging",
+          "effect": "Gain 1 Strength"
+        },
+        {
+          "move": "Ultimate Blast",
+          "damage": 25,
+          "note": "After charging"
+        }
+      ],
+      "mechanics": [
+        "Charges Turn 1",
+        "Ultimate Blast can OHKO if not careful"
+      ],
+      "strategy_tips": [
+        "Kill before Ultimate Blast or block 25+ damage",
+        "High priority target in gremlin groups",
+        "Weak reduces Ultimate Blast damage significantly"
+      ],
+      "ascension_changes": {
+        "asc_2": "+2 Ultimate damage (27)",
+        "asc_7": "+1 HP"
+      },
+      "danger_rating": 4
+    },
+    {
+      "name": "Gremlin Thief (Sneaky Gremlin)",
+      "type": "NORMAL",
+      "hp_range": [
+        10,
+        14
+      ],
+      "hp_a7_plus": [
+        11,
+        15
+      ],
+      "move_pattern": [
+        {
+          "move": "Puncture",
+          "damage": 9,
+          "probability": "50%"
+        },
+        {
+          "move": "Escape",
+          "effect": "Steal 10-20 gold and flee",
+          "probability": "50%"
+        }
+      ],
+      "mechanics": [
+        "Can steal gold and run away"
+      ],
+      "strategy_tips": [
+        "Kill quickly to prevent gold theft",
+        "Low HP makes it easy to one-shot",
+        "Prioritize if you need the gold"
+      ],
+      "ascension_changes": {
+        "asc_2": "+1 damage (10)",
+        "asc_7": "+1 HP"
+      },
+      "danger_rating": 2
+    },
+    {
+      "name": "Shield Gremlin",
+      "type": "NORMAL",
+      "hp_range": [
+        12,
+        15
+      ],
+      "hp_a7_plus": [
+        13,
+        16
+      ],
+      "move_pattern": [
+        {
+          "turn": 1,
+          "move": "Protect",
+          "effect": "Give ally 7 Block"
+        },
+        {
+          "move": "Shield Bash",
+          "damage": 6,
+          "probability": "After protecting"
+        }
+      ],
+      "mechanics": [
+        "Protects other enemies",
+        "Makes group fights harder"
+      ],
+      "strategy_tips": [
+        "Kill first in multi-enemy fights",
+        "Prevents burst damage on other enemies",
+        "Low HP, easy to remove"
+      ],
+      "ascension_changes": {
+        "asc_2": "+1 Block given (8)",
+        "asc_7": "+1 HP"
+      },
+      "danger_rating": 2
+    },
+    {
+      "name": "Fungi Beast",
+      "type": "NORMAL",
+      "hp_range": [
+        22,
+        28
+      ],
+      "hp_a7_plus": [
+        24,
+        30
+      ],
+      "move_pattern": [
+        {
+          "move": "Bite",
+          "damage": 6,
+          "probability": "60%"
+        },
+        {
+          "move": "Grow",
+          "effect": "Gain 3 Strength",
+          "probability": "40%"
+        }
+      ],
+      "mechanics": [
+        "Scales with Strength over time"
+      ],
+      "strategy_tips": [
+        "Kill quickly before Strength stacks",
+        "Weak is effective",
+        "Moderate HP pool"
+      ],
+      "ascension_changes": {
+        "asc_2": "+1 damage (7)",
+        "asc_7": "+2 HP"
+      },
+      "danger_rating": 3
+    },
+    {
+      "name": "Looter",
+      "type": "NORMAL",
+      "hp_range": [
+        44,
+        48
+      ],
+      "hp_a7_plus": [
+        46,
+        50
+      ],
+      "move_pattern": [
+        {
+          "move": "Mug",
+          "damage": 10,
+          "effect": "Steal 15 gold",
+          "probability": "40%"
+        },
+        {
+          "move": "Smoke Bomb",
+          "effect": "Gain 6 Block",
+          "probability": "30%"
+        },
+        {
+          "move": "Lunge",
+          "damage": 12,
+          "probability": "30%"
+        }
+      ],
+      "mechanics": [
+        "Can steal significant gold",
+        "Has defensive option"
+      ],
+      "strategy_tips": [
+        "Kill to recover stolen gold",
+        "Higher HP than other Act 1 normals",
+        "Can be tanky with Smoke Bomb"
+      ],
+      "ascension_changes": {
+        "asc_2": "+1 damage",
+        "asc_7": "+2 HP"
+      },
+      "danger_rating": 3
+    }
+  ]
+}

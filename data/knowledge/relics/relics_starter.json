@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "file": "relics_starter.json",
+    "description": "Starter pool relics",
+    "usage": "Load when: evaluating starter relics, checking relic rewards",
+    "count": 4,
+    "last_updated": "2026-05-14"
+  },
+  "relics": [
+    {
+      "name": "Burning Blood",
+      "tier": "Starter",
+      "pool": "Red",
+      "description": "At the end of combat, heal 6 HP.",
+      "flavor_text": "Your body's own blood burns with an undying rage."
+    },
+    {
+      "name": "Cracked Core",
+      "tier": "Starter",
+      "pool": "Blue",
+      "description": "At the start of each combat, Channel 1 Lightning.",
+      "flavor_text": "The mysterious life force which powers the Automatons within the Spire. It appears to be cracked."
+    },
+    {
+      "name": "Pure Water",
+      "tier": "Starter",
+      "pool": "Purple",
+      "description": "At the start of each combat, add a Miracle into your hand.",
+      "flavor_text": "Filtered through fine sand and free of impurities."
+    },
+    {
+      "name": "Ring of the Snake",
+      "tier": "Starter",
+      "pool": "Green",
+      "description": "At the start of each combat, draw 2 additional cards.",
+      "flavor_text": "Made from a fossilized snake. Represents great skill as a huntress."
+    }
+  ]
+}

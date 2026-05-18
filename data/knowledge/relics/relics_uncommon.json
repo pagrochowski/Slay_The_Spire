@@ -1,0 +1,263 @@
+{
+  "_meta": {
+    "file": "relics_uncommon.json",
+    "description": "Uncommon pool relics",
+    "usage": "Load when: evaluating uncommon relics, checking relic rewards",
+    "count": 36,
+    "last_updated": "2026-05-14"
+  },
+  "relics": [
+    {
+      "name": "Blue Candle",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Unplayable Curse cards can now be played.\nWhenever you play a Curse, lose 1 HP and Exhaust it.",
+      "flavor_text": "The flame ignites when shrouded in darkness."
+    },
+    {
+      "name": "Bottled Flame",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Upon pickup, choose an Attack. Start each combat with this card in your hand.",
+      "flavor_text": "Inside the bottle resides a flame that eternally burns."
+    },
+    {
+      "name": "Bottled Lightning",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Upon pickup, choose a Skill. Start each combat with this card in your hand.",
+      "flavor_text": "Peering into the swirling maelstrom, you see a part of yourself staring back."
+    },
+    {
+      "name": "Bottled Tornado",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Upon pickup, choose a Power card. Start each combat with this card in your hand.",
+      "flavor_text": "The bottle gently hums and whirs."
+    },
+    {
+      "name": "Darkstone Periapt",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Whenever you obtain a Curse, increase your Max HP by 6.",
+      "flavor_text": "The stone draws power from dark energy, converting it into vitality for the wearer."
+    },
+    {
+      "name": "Duality",
+      "tier": "Uncommon",
+      "pool": "Purple",
+      "description": "Whenever you play an Attack, gain 1 temporary Dexterity.",
+      "flavor_text": "\"And the sun was extinguished forever, as if curtains fell before it.\" - Zoroth"
+    },
+    {
+      "name": "Eternal Feather",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "For every 5 cards in your deck, heal 3 HP whenever you enter a Rest Site.",
+      "flavor_text": "This feather appears to be completely indestructible. What bird does this possibly come from?"
+    },
+    {
+      "name": "Frozen Egg",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Whenever you add a Power card into your deck, Upgrade it.",
+      "flavor_text": "The egg lies inert and frozen, never to hatch."
+    },
+    {
+      "name": "Gold-Plated Cables",
+      "tier": "Uncommon",
+      "pool": "Blue",
+      "description": "Your rightmost Orb triggers its passive an additional time.",
+      "flavor_text": "\"Interesting! Even automatons are affected by placebo.\" - Ranwid"
+    },
+    {
+      "name": "Gremlin Horn",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Whenever an enemy dies, gain [E] and draw 1 card.",
+      "flavor_text": "\"Gremlin Nobs are capable of growing until the day they die. Remarkable.\" - Ranwid"
+    },
+    {
+      "name": "Horn Cleat",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "At the start of your 2nd turn, gain 14 Block.",
+      "flavor_text": "Pleasant to hold in the hand. What was it for?"
+    },
+    {
+      "name": "Ink Bottle",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Whenever you play 10 cards, draw 1 card.",
+      "flavor_text": "Once exhausted, appears to refill itself in a different color."
+    },
+    {
+      "name": "Kunai",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Every time you play 3 Attacks in a single turn, gain 1 Dexterity.",
+      "flavor_text": "A blade favored by assassins for its lethality at range."
+    },
+    {
+      "name": "Letter Opener",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Every time you play 3 Skills in a single turn, deal 5 damage to ALL enemies.",
+      "flavor_text": "Unnaturally sharp."
+    },
+    {
+      "name": "Matryoshka",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "The next 2 non-Boss chests you open contain 2 Relics.",
+      "flavor_text": "A stackable set of painted dolls. The paint depicts an unknown bird with white eyes and blue feathers."
+    },
+    {
+      "name": "Meat on the Bone",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "If your HP is at or below 50% at the end of combat, heal 12 HP.",
+      "flavor_text": "The meat keeps replenishing, never seeming to fully run out."
+    },
+    {
+      "name": "Mercury Hourglass",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "At the start of your turn, deal 3 damage to ALL enemies.",
+      "flavor_text": "An enchanted hourglass that endlessly drips."
+    },
+    {
+      "name": "Molten Egg",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Whenever you add an Attack into your deck, Upgrade it.",
+      "flavor_text": "The egg of a Phoenix. It glows red hot with a simmering lava."
+    },
+    {
+      "name": "Mummified Hand",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Whenever you play a Power card, a random card in your hand costs 0 that turn.",
+      "flavor_text": "Frequently twitches, especially when your pulse is high."
+    },
+    {
+      "name": "Ninja Scroll",
+      "tier": "Uncommon",
+      "pool": "Green",
+      "description": "At the start of each combat, add 3 Shivs into your hand.",
+      "flavor_text": "Contains the secrets of assassination."
+    },
+    {
+      "name": "Ornamental Fan",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Every time you play 3 Attacks in a single turn, gain 4 Block.",
+      "flavor_text": "The fan seems to extend and harden as blood is spilled."
+    },
+    {
+      "name": "Pantograph",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "At the start of Boss combats, heal 25 HP.",
+      "flavor_text": "\"Solid foundations are not accidental. Tools for planning are a must.\" - The Architect"
+    },
+    {
+      "name": "Paper Krane",
+      "tier": "Uncommon",
+      "pool": "Green",
+      "description": "Enemies with Weak deal 40% less damage rather than 25%.",
+      "flavor_text": "An origami of a creature from a past age."
+    },
+    {
+      "name": "Paper Phrog",
+      "tier": "Uncommon",
+      "pool": "Red",
+      "description": "Enemies with Vulnerable take 75% more damage rather than 50%.",
+      "flavor_text": "The paper continually folds and unfolds itself into the shape of a small creature."
+    },
+    {
+      "name": "Pear",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Upon pickup, raise your Max HP by 10.",
+      "flavor_text": "A common fruit before the Spireblight."
+    },
+    {
+      "name": "Question Card",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Future card rewards have 1 additional card to choose from.",
+      "flavor_text": "\"Those with more choices minimize the downside to chaos.\" - Kublai the Great"
+    },
+    {
+      "name": "Self-Forming Clay",
+      "tier": "Uncommon",
+      "pool": "Red",
+      "description": "Whenever you lose HP, gain 3 Block next turn.",
+      "flavor_text": "\"Most curious! It appears to form itself loosely on my thoughts! Tele-clay?\" - Ranwid"
+    },
+    {
+      "name": "Shuriken",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Every time you play 3 Attacks in a single turn, gain 1 Strength.",
+      "flavor_text": "Lightweight throwing weapons. Recommend going for the eyes."
+    },
+    {
+      "name": "Singing Bowl",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "When adding cards into your deck, you may raise your Max HP by 2 instead.",
+      "flavor_text": "This well-used artifact rings out with a beautiful melody when struck."
+    },
+    {
+      "name": "Strike Dummy",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Cards containing \"Strike\" deal 3 additional damage.",
+      "flavor_text": "It's beat up."
+    },
+    {
+      "name": "Sundial",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Every 3 times you shuffle your draw pile, gain [E] [E] .",
+      "flavor_text": "\"Early man's foolish obsession with time caused them to look to the sky for guidance, hoping for something permanent.\" - Zoroth"
+    },
+    {
+      "name": "Symbiotic Virus",
+      "tier": "Uncommon",
+      "pool": "Blue",
+      "description": "At the start of each combat, Channel 1 Dark.",
+      "flavor_text": "A little bit of bad can do a lot of good..."
+    },
+    {
+      "name": "Teardrop Locket",
+      "tier": "Uncommon",
+      "pool": "Purple",
+      "description": "Start each combat in Calm.",
+      "flavor_text": "Its owner blind, its contents unseen."
+    },
+    {
+      "name": "The Courier",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "The Merchant restocks cards, relics, and potions. All prices are reduced by 20%.",
+      "flavor_text": "The Merchant's personal pet!"
+    },
+    {
+      "name": "Toxic Egg",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Whenever you add a Skill into your deck, Upgrade it.",
+      "flavor_text": "\"What a marvelous discovery! This appears to be the inert egg of some magical creature. Who or what created this?\" - Ranwid"
+    },
+    {
+      "name": "White Beast Statue",
+      "tier": "Uncommon",
+      "pool": "",
+      "description": "Potions always appear in combat rewards.",
+      "flavor_text": "A small white statue of a creature you have never seen before."
+    }
+  ]
+}
