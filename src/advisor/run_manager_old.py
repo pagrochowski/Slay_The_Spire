@@ -1,5 +1,5 @@
 """
-Persistent run storage for Slay the Spire advisor.
+Persistent run storage for Slay the Spire status recorder.
 
 Stores run data in JSON file so runs persist across sessions.
 """
@@ -78,14 +78,23 @@ class RunManager:
             if run.get("status") == "active":
                 self.active_run_id = run["id"]
                 self._save()
-                logger.info(f"Resumed run: {run['character']} A{run['ascension']} (Floor {run.get('floor', 1)})")
+                logger.info(f"Resumed run: {run['character']} A{run['ascension']} (Act {run.get('act', 1)})")
                 return run
         return None
     
     def create_run(self, character: str, ascension: int, starter_deck: list, 
                    starter_relic: str, max_hp: int, color: str) -> dict:
-        """Create a new run."""
-        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+        """Create a new run with unique ID."""
+        # Generate unique ID with milliseconds to avoid collisions
+        run_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:20]  # Include microseconds, truncate to reasonable length
+        
+        # Ensure ID is truly unique (in case of extremely fast consecutive calls)
+        existing_ids = {r["id"] for r in self.runs}
+        counter = 0
+        original_id = run_id
+        while run_id in existing_ids:
+            counter += 1
+            run_id = f"{original_id}_{counter}"
         
         run = {
             "id": run_id,
@@ -97,7 +106,6 @@ class RunManager:
             "last_updated": datetime.now().isoformat(),
             
             # Progress
-            "floor": 1,
             "act": 1,
             
             # Resources
@@ -109,6 +117,7 @@ class RunManager:
             "starter_deck": starter_deck,
             "added_cards": [],
             "removed_cards": [],
+            "upgraded_cards": [],
             "relics": [starter_relic],
             "potions": [],
             
@@ -122,21 +131,11 @@ class RunManager:
             # Current boss (set when player sees the map)
             "current_boss": None,
             
-            # Detected archetype tendencies
-            "archetype_hints": [],
-            
-            # Strategy notes (evolve during run)
-            "strategy": [],
-            
-            # Events log (for context)
-            "events": [
-                {
-                    "floor": 0,
-                    "type": "run_start",
-                    "timestamp": datetime.now().isoformat(),
-                    "details": f"Started {character} A{ascension}"
-                }
-            ]
+            # Current decision point (for external advisor context)
+            "current_choice": {
+                "type": None,  # "cards", "relics", "shop", None
+                "options": []   # List of available options
+            }
         }
         
         self.runs.append(run)
@@ -167,12 +166,11 @@ class RunManager:
             return None
         
         run["added_cards"].append(card_name)
-        run["events"].append({
-            "type": "card_added",
-            "timestamp": datetime.now().isoformat(),
-            "details": card_name
-        })
         run["last_updated"] = datetime.now().isoformat()
+        
+        # Clear current choice after making decision
+        self.clear_choice()
+        
         self._save()
         return run
     
@@ -183,11 +181,25 @@ class RunManager:
             return None
         
         run["removed_cards"].append(card_name)
-        run["events"].append({
-            "type": "card_removed",
-            "timestamp": datetime.now().isoformat(),
-            "details": card_name
-        })
+        run["last_updated"] = datetime.now().isoformat()
+        self._save()
+        return run
+    
+    def upgrade_card(self, card_name: str) -> Optional[dict]:
+        """Upgrade a card in the active run."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        # Remove + suffix if present (user might say "upgrade strike+")
+        base_name = card_name.rstrip('+')
+        
+        # Only add if not already upgraded
+        if base_name not in run.get("upgraded_cards", []):
+            if "upgraded_cards" not in run:
+                run["upgraded_cards"] = []
+            run["upgraded_cards"].append(base_name)
+        
         run["last_updated"] = datetime.now().isoformat()
         self._save()
         return run
@@ -199,11 +211,32 @@ class RunManager:
             return None
         
         run["relics"].append(relic_name)
-        run["events"].append({
-            "type": "relic_added",
-            "timestamp": datetime.now().isoformat(),
-            "details": relic_name
-        })
+        run["last_updated"] = datetime.now().isoformat()
+        
+        # Clear current choice after making decision
+        self.clear_choice()
+        
+        self._save()
+        return run
+    
+    def remove_relic(self, relic_name: str) -> Optional[dict]:
+        """Remove a relic from the active run."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        # Find the relic (case-insensitive)
+        relics = run["relics"]
+        found = False
+        for i, r in enumerate(relics):
+            if r.lower() == relic_name.lower():
+                relics.pop(i)
+                found = True
+                break
+        
+        if not found:
+            return None
+        
         run["last_updated"] = datetime.now().isoformat()
         self._save()
         return run
@@ -234,35 +267,6 @@ class RunManager:
             self._save()
         return run
     
-    def advance_floor(self, new_floor: int = None, new_act: int = None) -> Optional[dict]:
-        """Advance to next floor."""
-        run = self.get_active_run()
-        if not run:
-            return None
-        
-        if new_floor:
-            run["floor"] = new_floor
-        else:
-            run["floor"] += 1
-        
-        # Update act based on floor or explicit act parameter
-        if new_act:
-            run["act"] = new_act
-        else:
-            # Auto-calculate act from floor (Act 1: 1-16, Act 2: 17-33, Act 3: 34-50, Act 4: 51+)
-            if run["floor"] <= 16:
-                run["act"] = 1
-            elif run["floor"] <= 33:
-                run["act"] = 2
-            elif run["floor"] <= 50:
-                run["act"] = 3
-            else:
-                run["act"] = 4
-        
-        run["last_updated"] = datetime.now().isoformat()
-        self._save()
-        return run
-    
     def set_boss(self, boss_name: str) -> Optional[dict]:
         """Set the current act boss."""
         run = self.get_active_run()
@@ -270,79 +274,90 @@ class RunManager:
             return None
         
         run["current_boss"] = boss_name
-        run["events"].append({
-            "type": "boss_scouted",
-            "timestamp": datetime.now().isoformat(),
-            "details": f"Boss: {boss_name}"
-        })
         run["last_updated"] = datetime.now().isoformat()
         self._save()
         logger.info(f"Boss set: {boss_name}")
         return run
     
-    def add_archetype_hint(self, archetype: str) -> Optional[dict]:
-        """Track that the deck is leaning toward an archetype."""
+    def update_act(self, act: int) -> Optional[dict]:
+        """Update the current act."""
         run = self.get_active_run()
         if not run:
             return None
         
-        if "archetype_hints" not in run:
-            run["archetype_hints"] = []
-        
-        if archetype not in run["archetype_hints"]:
-            run["archetype_hints"].append(archetype)
-            run["last_updated"] = datetime.now().isoformat()
-            self._save()
-        return run
-    
-    def add_strategy(self, note: str) -> Optional[dict]:
-        """Add a strategy note to the run."""
-        run = self.get_active_run()
-        if not run:
-            return None
-        
-        if "strategy" not in run:
-            run["strategy"] = []
-        
-        # Avoid exact duplicates
-        if note not in run["strategy"]:
-            run["strategy"].append(note)
-            run["last_updated"] = datetime.now().isoformat()
-            self._save()
-            logger.info(f"Strategy added: {note}")
-        return run
-    
-    def remove_strategy(self, note: str) -> Optional[dict]:
-        """Remove a strategy note from the run."""
-        run = self.get_active_run()
-        if not run:
-            return None
-        
-        if "strategy" in run and note in run["strategy"]:
-            run["strategy"].remove(note)
-            run["last_updated"] = datetime.now().isoformat()
-            self._save()
-            logger.info(f"Strategy removed: {note}")
-        return run
-    
-    def clear_strategy(self) -> Optional[dict]:
-        """Clear all strategy notes."""
-        run = self.get_active_run()
-        if not run:
-            return None
-        
-        run["strategy"] = []
+        run["act"] = act
         run["last_updated"] = datetime.now().isoformat()
         self._save()
-        logger.info("Strategy cleared")
         return run
     
-    def get_strategy(self) -> list:
-        """Get current strategy notes."""
+    # Current Choice Tracking (for external advisor context)
+    
+    def set_card_choice(self, options: list) -> Optional[dict]:
+        """Set current card choice options."""
         run = self.get_active_run()
         if not run:
-            return []
-        return run.get("strategy", [])
+            return None
+        
+        run["current_choice"] = {
+            "type": "cards",
+            "options": options
+        }
+        run["last_updated"] = datetime.now().isoformat()
+        self._save()
+        logger.info(f"Card choice set: {', '.join(options)}")
+        return run
+    
+    def set_relic_choice(self, options: list) -> Optional[dict]:
+        """Set current relic choice options."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        run["current_choice"] = {
+            "type": "relics",
+            "options": options
+        }
+        run["last_updated"] = datetime.now().isoformat()
+        self._save()
+        logger.info(f"Relic choice set: {', '.join(options)}")
+        return run
+    
+    def set_shop_choices(self, cards: list = None, relics: list = None, potions: list = None) -> Optional[dict]:
+        """Set current shop options."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        shop_options = {}
+        if cards:
+            shop_options["cards"] = cards
+        if relics:
+            shop_options["relics"] = relics
+        if potions:
+            shop_options["potions"] = potions
+        
+        run["current_choice"] = {
+            "type": "shop",
+            "options": shop_options
+        }
+        run["last_updated"] = datetime.now().isoformat()
+        self._save()
+        logger.info(f"Shop choices set")
+        return run
+    
+    def clear_choice(self) -> Optional[dict]:
+        """Clear the current decision point."""
+        run = self.get_active_run()
+        if not run:
+            return None
+        
+        run["current_choice"] = {
+            "type": None,
+            "options": []
+        }
+        run["last_updated"] = datetime.now().isoformat()
+        self._save()
+        return run
     
     def end_run(self, victory: bool = False, cause: str = None) -> Optional[dict]:
         """End the active run."""
@@ -357,13 +372,6 @@ class RunManager:
         if cause:
             run["death_cause"] = cause
         
-        run["events"].append({
-            "floor": run["floor"],
-            "type": "run_end",
-            "timestamp": datetime.now().isoformat(),
-            "details": "Victory!" if victory else f"Defeated: {cause or 'unknown'}"
-        })
-        
         self.active_run_id = None
         self._save()
         
@@ -371,7 +379,7 @@ class RunManager:
         return run
     
     def get_full_deck(self, run: dict = None) -> list:
-        """Get the full current deck (starter + added - removed)."""
+        """Get the full current deck (starter + added - removed), with upgrades marked."""
         run = run or self.get_active_run()
         if not run:
             return []
@@ -384,21 +392,29 @@ class RunManager:
             if card in deck:
                 deck.remove(card)
         
-        return deck
-    
-    def get_recent_events(self, run: dict = None, count: int = 5) -> list:
-        """Get recent events from the run."""
-        run = run or self.get_active_run()
-        if not run:
-            return []
+        # Mark upgraded cards with "+"
+        upgraded_cards = run.get("upgraded_cards", [])
+        if upgraded_cards:
+            deck_with_upgrades = []
+            for card in deck:
+                base_name = card.rstrip('+')
+                if base_name in upgraded_cards:
+                    deck_with_upgrades.append(f"{base_name}+")
+                else:
+                    deck_with_upgrades.append(card)
+            return deck_with_upgrades
         
-        events = run.get("events", [])
-        return events[-count:] if events else []
+        return deck
 
 
 def format_deck_counts(cards: list) -> str:
     """Format a deck list with counts (e.g., '5x Strike, 4x Defend, 1x Bash')."""
     from collections import Counter
     counts = Counter(cards)
-    parts = [f"{count}x {card}" for card, count in counts.items()]
-    return ", ".join(parts)
+    formatted = []
+    for card, count in sorted(counts.items()):
+        if count > 1:
+            formatted.append(f"{count}x {card}")
+        else:
+            formatted.append(card)
+    return ", ".join(formatted)

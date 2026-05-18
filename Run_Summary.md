@@ -1,22 +1,31 @@
 # Slay the Spire Run Summary
 
 ## Run Information
-- **Character**: Defect
-- **Ascension**: 0
-- **Act**: 1
+- **Character**: DEFECT
+- **Ascension**: 3
+- **Act**: 2
 
 ## Current Status
 - **HP**: 75/75
-- **Gold**: 99
+- **Gold**: 753
 
-## Deck (10 cards)
-4x Defend, Dualcast, 4x Strike, Zap
+## Deck (20 cards)
+Beam Cell, Conserve Battery, Core Surge+, 4x Defend_B, Doom and Gloom, Dualcast, FTL, 2x Go for the Eyes, Hyperbeam, Reboot, Rebound, Reprogram+, 3x Strike_B, Zap
 
 ## Relics
 - Cracked Core
+- Potion Belt
+- Bottled Flame
+- Meat on the Bone
+- Old Coin
+- Black Star
 
 ## Potions
-- None
+- Potion Slot
+- Potion Slot
+- Potion Slot
+- Potion Slot
+- Potion Slot
 
 ## Keys
 - Ruby: ✗
@@ -25,10 +34,8 @@
 
 ## Current Decision
 **Choosing between 3 cards:**
-- Go for the Eyes
-- Barrage
-- Bullseye
+- Auto-Shields
+- TURBO+
+- Darkness+
 
 ---
-
-

@@ -21,7 +21,18 @@ from groq import Groq
 from dotenv import load_dotenv
 from loguru import logger
 
-from src.advisor.run_manager import RunManager, format_deck_counts
+
+def format_deck_counts(cards: list) -> str:
+    """Format a deck list with counts (e.g., '5x Strike, 4x Defend, 1x Bash')."""
+    from collections import Counter
+    counts = Counter(cards)
+    formatted = []
+    for card, count in sorted(counts.items()):
+        if count > 1:
+            formatted.append(f"{count}x {card}")
+        else:
+            formatted.append(card)
+    return ", ".join(formatted)
 
 
 class KnowledgeBase:
