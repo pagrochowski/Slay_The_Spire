@@ -1,41 +1,44 @@
 # Slay the Spire Run Summary
 
 ## Run Information
-- **Character**: DEFECT
+- **Character**: WATCHER
 - **Ascension**: 3
-- **Act**: 2
+- **Act**: 1
 
 ## Current Status
-- **HP**: 75/75
-- **Gold**: 753
+- **HP**: 66/72
+- **Gold**: 117
 
-## Deck (20 cards)
-Beam Cell, Conserve Battery, Core Surge+, 4x Defend_B, Doom and Gloom, Dualcast, FTL, 2x Go for the Eyes, Hyperbeam, Reboot, Rebound, Reprogram+, 3x Strike_B, Zap
+## Deck (11 cards)
+- 4x Defend [1] (Skill): Gain 5 Block.
+- Eruption [2] (Attack): Deal 9 damage.
+Enter Wrath.
+- 4x Strike [1] (Attack): Deal 6 damage.
+- Vigilance [2] (Skill): Gain 8 Block.
+Enter Calm.
 
 ## Relics
-- Cracked Core
-- Potion Belt
-- Bottled Flame
-- Meat on the Bone
-- Old Coin
-- Black Star
+- PureWater: At the start of each combat, add a Miracle into your hand.
 
 ## Potions
-- Potion Slot
-- Potion Slot
-- Potion Slot
-- Potion Slot
-- Potion Slot
+- Regen Potion: Gain 5 Regen.
+- Strength Potion: Gain 2 Strength.
+- FearPotion
 
 ## Keys
 - Ruby: ✗
 - Emerald: ✗
 - Sapphire: ✗
 
-## Current Decision
-**Choosing between 3 cards:**
-- Auto-Shields
-- TURBO+
-- Darkness+
+## Boss & Elites
+- **Current Boss**: The Guardian
+- **Elites defeated this act:** None
+
+**Current choice:**
+- Battle Hymn [1] (Power): At the start of each turn, add a *Smite into your hand.
+- Third Eye [1] (Skill): Gain 7 Block.
+Scry 3.
+- Foresight [1] (Power): At the start of your turn, Scry 3.
+- SKIP?
 
 ---

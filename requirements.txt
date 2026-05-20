@@ -24,6 +24,9 @@ pyttsx3>=2.90          # Text-to-speech (offline, fallback)
 edge-tts>=6.1.0        # Microsoft Edge TTS (natural voices)
 pygame>=2.5.0          # Audio playback for TTS
 
+# Save file reader
+spireslayer==2.0.0     # Read and parse Slay the Spire autosave files
+
 # Development
 pytest>=8.0.0          # Testing framework
 pytest-asyncio>=0.23.0 # Async test support
