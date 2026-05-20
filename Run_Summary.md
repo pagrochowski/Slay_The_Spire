@@ -6,24 +6,32 @@
 - **Act**: 1
 
 ## Current Status
-- **HP**: 66/72
-- **Gold**: 117
+- **HP**: 50/72
+- **Gold**: 230
 
-## Deck (11 cards)
+## Deck (17 cards)
+- Adaptation
+- Battle Hymn [1] (Power): At the start of each turn, add a *Smite into your hand.
 - 4x Defend [1] (Skill): Gain 5 Block.
-- Eruption [2] (Attack): Deal 9 damage.
-Enter Wrath.
+- Empty Body [1] (Skill): Gain 7 Block. Exit your Stance.
+- Eruption [2] (Attack): Deal 9 damage. Enter Wrath.
 - 4x Strike [1] (Attack): Deal 6 damage.
-- Vigilance [2] (Skill): Gain 8 Block.
-Enter Calm.
+- Swivel [2] (Skill): Gain 8 Block. The next Attack you play costs 0.
+- Third Eye [1] (Skill): Gain 7 Block. Scry 3.
+- Vengeance
+- Vigilance [2] (Skill): Gain 8 Block. Enter Calm.
+- Wheel Kick [2] (Attack): Deal 15 damage. Draw 2 cards.
 
 ## Relics
-- PureWater: At the start of each combat, add a Miracle into your hand.
+- Pure Water: At the start of each combat, add a Miracle into your hand.
+- Darkstone Periapt: Whenever you obtain a Curse, increase your Max HP by 6.
+- Vajra: Start each combat with 1 Strength.
+- Kunai: Every time you play 3 Attacks in a single turn, gain 1 Dexterity.
 
 ## Potions
-- Regen Potion: Gain 5 Regen.
+- Colorless Potion: Choose 1 of 3 random Colorless cards to add to your hand, it costs 0 this turn.
 - Strength Potion: Gain 2 Strength.
-- FearPotion
+- Potion Slot
 
 ## Keys
 - Ruby: ✗
@@ -35,10 +43,8 @@ Enter Calm.
 - **Elites defeated this act:** None
 
 **Current choice:**
-- Battle Hymn [1] (Power): At the start of each turn, add a *Smite into your hand.
-- Third Eye [1] (Skill): Gain 7 Block.
-Scry 3.
-- Foresight [1] (Power): At the start of your turn, Scry 3.
+- Weave [0] (Attack): Deal 4 damage.
+Whenever you Scry, return this from the discard pile to your Hand.
 - SKIP?
 
 ---

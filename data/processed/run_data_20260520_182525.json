@@ -1,0 +1,37 @@
+{
+  "character": "WATCHER_20260520_182525",
+  "ascension": 3,
+  "act": 1,
+  "floor": 2,
+  "current_hp": 66,
+  "max_hp": 72,
+  "gold": 117,
+  "deck": [
+    "Strike_P",
+    "Strike_P",
+    "Strike_P",
+    "Strike_P",
+    "Defend_P",
+    "Defend_P",
+    "Defend_P",
+    "Defend_P",
+    "Eruption",
+    "Vigilance",
+    "Vengeance"
+  ],
+  "relics": [
+    "PureWater"
+  ],
+  "potions": [
+    "Regen Potion",
+    "Strength Potion",
+    "FearPotion"
+  ],
+  "has_ruby_key": false,
+  "has_emerald_key": false,
+  "has_sapphire_key": false,
+  "boss": "The Guardian",
+  "path_taken": [],
+  "current_room": "Unknown",
+  "seed": "-3101325969355544146"
+}
