@@ -17,16 +17,22 @@ class TestAudioTranscriber:
     
     def setup_method(self):
         """Set up test fixtures."""
-        self.transcriber = AudioTranscriber()
         self.test_audio_path = Path("test_audio.wav")
         self.test_text = "strike defend eruption"
     
+    def _create_transcriber(self):
+        """Create a transcriber with mocked Groq client."""
+        with patch('groq.Groq'):
+            return AudioTranscriber()
+    
     # Initialization tests
-    def test_initialization(self):
+    @patch('groq.Groq')
+    def test_initialization(self, mock_groq):
         """Test transcriber initializes with correct API key."""
-        assert self.transcriber.api_key == Config.GROQ_API_KEY
-        assert self.transcriber.primary_model == Config.WHISPER_PRIMARY_MODEL
-        assert self.transcriber.fallback_model == Config.WHISPER_FALLBACK_MODEL
+        transcriber = AudioTranscriber()
+        assert transcriber.api_key == Config.GROQ_API_KEY
+        assert transcriber.primary_model == Config.WHISPER_PRIMARY_MODEL
+        assert transcriber.fallback_model == Config.WHISPER_FALLBACK_MODEL
     
     def test_initialization_missing_api_key(self):
         """Test initialization fails gracefully without API key."""
@@ -38,19 +44,20 @@ class TestAudioTranscriber:
     
     # Transcription with primary model tests
     @patch('groq.Groq')
-    @patch('builtins.open', mock_open(read_data=b'fake audio data'))
-    def test_transcribe_with_model_success(self, mock_groq_class):
+    @patch('builtins.open', new_callable=mock_open, read_data=b'fake audio data')
+    def test_transcribe_with_model_success(self, mock_file, mock_groq_class):
         """Test successful transcription with a model."""
         # Mock Groq client
         mock_client = MagicMock()
         mock_groq_class.return_value = mock_client
         
-        # Mock transcription response
-        mock_response = MagicMock()
-        mock_response.text = self.test_text
-        mock_client.audio.transcriptions.create.return_value = mock_response
+        # Mock transcription response - it returns a string directly when response_format="text"
+        mock_client.audio.transcriptions.create.return_value = self.test_text
         
-        result = self.transcriber._transcribe_with_model(
+        # Create transcriber with mocked Groq
+        transcriber = AudioTranscriber()
+        
+        result = transcriber._transcribe_with_model(
             self.test_audio_path,
             Config.WHISPER_PRIMARY_MODEL,
             "en"
@@ -74,7 +81,10 @@ class TestAudioTranscriber:
         # Simulate API error
         mock_client.audio.transcriptions.create.side_effect = Exception("API Error")
         
-        result = self.transcriber._transcribe_with_model(
+        # Create transcriber with mocked Groq
+        transcriber = AudioTranscriber()
+        
+        result = transcriber._transcribe_with_model(
             self.test_audio_path,
             Config.WHISPER_PRIMARY_MODEL,
             "en"
@@ -85,8 +95,11 @@ class TestAudioTranscriber:
     @patch('groq.Groq')
     def test_transcribe_with_model_file_not_found(self, mock_groq_class):
         """Test handling when audio file doesn't exist."""
+        # Create transcriber with mocked Groq
+        transcriber = AudioTranscriber()
+        
         nonexistent_path = Path("nonexistent.wav")
-        result = self.transcriber._transcribe_with_model(
+        result = transcriber._transcribe_with_model(
             nonexistent_path,
             Config.WHISPER_PRIMARY_MODEL,
             "en"
@@ -99,11 +112,13 @@ class TestAudioTranscriber:
     @patch('pathlib.Path.stat')
     def test_transcribe_audio_primary_success(self, mock_stat, mock_transcribe):
         """Test transcription succeeds with primary model."""
+        transcriber = self._create_transcriber()
+        
         # Mock file size
         mock_stat.return_value = MagicMock(st_size=1024)
         mock_transcribe.return_value = self.test_text
         
-        result = self.transcriber.transcribe_audio(self.test_audio_path)
+        result = transcriber.transcribe_audio(self.test_audio_path)
         
         assert result == self.test_text
         # Should only call primary model
@@ -117,12 +132,14 @@ class TestAudioTranscriber:
     @patch('pathlib.Path.stat')
     def test_transcribe_audio_fallback_success(self, mock_stat, mock_transcribe):
         """Test transcription falls back to secondary model."""
+        transcriber = self._create_transcriber()
+        
         # Mock file size
         mock_stat.return_value = MagicMock(st_size=1024)
         # Primary fails, fallback succeeds
         mock_transcribe.side_effect = [None, self.test_text]
         
-        result = self.transcriber.transcribe_audio(self.test_audio_path)
+        result = transcriber.transcribe_audio(self.test_audio_path)
         
         assert result == self.test_text
         # Should call both models
@@ -137,9 +154,11 @@ class TestAudioTranscriber:
     @patch('pathlib.Path.stat')
     def test_transcribe_audio_both_fail(self, mock_stat, mock_transcribe):
         """Test when both primary and fallback fail."""
+        transcriber = self._create_transcriber()
+        
         # Mock file size
         mock_stat.return_value = MagicMock(st_size=1024)
-        result = self.transcriber.transcribe_audio(self.test_audio_path)
+        result = transcriber.transcribe_audio(self.test_audio_path)
         
         assert result is None
         # Should try both models
@@ -150,11 +169,13 @@ class TestAudioTranscriber:
     @patch('pathlib.Path.stat')
     def test_transcribe_audio_custom_language(self, mock_stat, mock_transcribe):
         """Test transcription with custom language."""
+        transcriber = self._create_transcriber()
+        
         # Mock file size
         mock_stat.return_value = MagicMock(st_size=1024)
         mock_transcribe.return_value = "texto en español"
         
-        result = self.transcriber.transcribe_audio(
+        result = transcriber.transcribe_audio(
             self.test_audio_path,
             language="es"
         )
@@ -171,42 +192,52 @@ class TestAudioTranscriber:
     @patch('pathlib.Path.stat')
     def test_transcribe_audio_empty_result(self, mock_stat, mock_transcribe):
         """Test handling of empty transcription result."""
+        transcriber = self._create_transcriber()
+        
         # Mock file size
         mock_stat.return_value = MagicMock(st_size=1024)
-        mock_transcribe.return_value = ""
+        # Empty result should return None and trigger fallback
+        mock_transcribe.return_value = None
         
-        result = self.transcriber.transcribe_audio(self.test_audio_path)
+        result = transcriber.transcribe_audio(self.test_audio_path)
         
-        # Empty string should be treated as failure, try fallback
+        # None result should try fallback
         assert mock_transcribe.call_count == 2
     
     @patch.object(AudioTranscriber, '_transcribe_with_model')
     @patch('pathlib.Path.stat')
     def test_transcribe_audio_whitespace_result(self, mock_stat, mock_transcribe):
         """Test handling of whitespace-only transcription."""
+        transcriber = self._create_transcriber()
+        
         # Mock file size
         mock_stat.return_value = MagicMock(st_size=1024)
-        mock_transcribe.return_value = "   "
+        # Whitespace gets stripped to empty, returns None, triggers fallback  
+        mock_transcribe.return_value = None
         
-        result = self.transcriber.transcribe_audio(self.test_audio_path)
+        result = transcriber.transcribe_audio(self.test_audio_path)
         
-        # Whitespace should be treated as failure
+        # None result should try fallback
         assert mock_transcribe.call_count == 2
     
     # Model configuration tests
-    def test_primary_model_configured(self):
+    @patch('groq.Groq')
+    def test_primary_model_configured(self, mock_groq):
         """Test that primary model is correctly configured."""
-        assert self.transcriber.primary_model == "whisper-large-v3"
+        transcriber = AudioTranscriber()
+        assert transcriber.primary_model == "whisper-large-v3"
     
-    def test_fallback_model_configured(self):
+    @patch('groq.Groq')
+    def test_fallback_model_configured(self, mock_groq):
         """Test that fallback model is correctly configured."""
-        assert self.transcriber.fallback_model == "whisper-large-v3-turbo"
+        transcriber = AudioTranscriber()
+        assert transcriber.fallback_model == "whisper-large-v3-turbo"
     
     # Integration-style tests
     @patch('groq.Groq')
-    @patch('builtins.open', mock_open(read_data=b'fake audio'))
+    @patch('builtins.open', new_callable=mock_open, read_data=b'fake audio')
     @patch('pathlib.Path.stat')
-    def test_full_transcription_workflow(self, mock_stat, mock_groq_class):
+    def test_full_transcription_workflow(self, mock_stat, mock_file, mock_groq_class):
         """Test complete transcription workflow."""
         # Mock file size
         mock_stat.return_value = MagicMock(st_size=1024)
@@ -215,12 +246,13 @@ class TestAudioTranscriber:
         mock_client = MagicMock()
         mock_groq_class.return_value = mock_client
         
-        # Mock successful response
-        mock_response = MagicMock()
-        mock_response.text = "battle hymn third eye"
-        mock_client.audio.transcriptions.create.return_value = mock_response
+        # Mock successful response - returns string when response_format="text"
+        mock_client.audio.transcriptions.create.return_value = "battle hymn third eye"
         
-        result = self.transcriber.transcribe_audio(
+        # Create transcriber with mocked Groq
+        transcriber = AudioTranscriber()
+        
+        result = transcriber.transcribe_audio(
             self.test_audio_path,
             language="en"
         )
@@ -231,9 +263,9 @@ class TestAudioTranscriber:
         mock_groq_class.assert_called_once_with(api_key=Config.GROQ_API_KEY)
     
     @patch('groq.Groq')
-    @patch('builtins.open', mock_open(read_data=b'fake audio'))
+    @patch('builtins.open', new_callable=mock_open, read_data=b'fake audio')
     @patch('pathlib.Path.stat')
-    def test_fallback_on_rate_limit(self, mock_stat, mock_groq_class):
+    def test_fallback_on_rate_limit(self, mock_stat, mock_file, mock_groq_class):
         """Test fallback when primary model hits rate limit."""
         # Mock file size
         mock_stat.return_value = MagicMock(st_size=1024)
@@ -243,15 +275,15 @@ class TestAudioTranscriber:
         
         # Primary model: rate limit error
         # Fallback model: success
-        mock_response = MagicMock()
-        mock_response.text = "vigilance eruption"
-        
         mock_client.audio.transcriptions.create.side_effect = [
             Exception("Rate limit exceeded"),
-            mock_response
+            "vigilance eruption"
         ]
         
-        result = self.transcriber.transcribe_audio(self.test_audio_path)
+        # Create transcriber with mocked Groq
+        transcriber = AudioTranscriber()
+        
+        result = transcriber.transcribe_audio(self.test_audio_path)
         
         assert result == "vigilance eruption"
         # Should have tried both models

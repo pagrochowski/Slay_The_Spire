@@ -163,6 +163,44 @@ class SaveParser:
                 elif isinstance(boss_data, str):
                     boss_name = boss_data
             
+            # Extract elite defeats by cross-referencing damage_taken with path
+            all_elites_defeated = []
+            damage_taken = save_data.get("metric_damage_taken", [])
+            path_per_floor = save_data.get("metric_path_per_floor", [])
+            
+            for combat in damage_taken:
+                if isinstance(combat, dict):
+                    floor = combat.get("floor", 0)
+                    enemies = combat.get("enemies", "")
+                    
+                    # Convert floor to int (it might be a float from JSON)
+                    floor = int(floor) if floor else 0
+                    
+                    # Check if this floor was an elite (E) encounter
+                    # path_per_floor is 1-indexed, so floor-1 gives us the index
+                    if floor > 0 and floor <= len(path_per_floor):
+                        room_type = path_per_floor[floor - 1]
+                        if room_type == "E":
+                            all_elites_defeated.append((floor, enemies))
+            
+            # Get current act to filter elites
+            current_act = save_data.get("act_num", 1)
+            
+            # Filter elites by current act
+            # Act 1: floors 1-16, Act 2: floors 17-33, Act 3: floors 34-51, Act 4: floors 52+
+            act_floor_ranges = {
+                1: (1, 16),
+                2: (17, 33),
+                3: (34, 51),
+                4: (52, 999)
+            }
+            
+            elites_defeated = []
+            if current_act in act_floor_ranges:
+                min_floor, max_floor = act_floor_ranges[current_act]
+                elites_defeated = [enemies for floor, enemies in all_elites_defeated 
+                                   if min_floor <= floor <= max_floor]
+            
             run_data = {
                 # Character info
                 "character": character,
@@ -193,6 +231,9 @@ class SaveParser:
                 
                 # Boss info
                 "boss": boss_name,
+                
+                # Elites defeated in current act
+                "elites_defeated": elites_defeated,
                 
                 # Path taken (for tracking which rooms visited)
                 "path_taken": save_data.get("path_taken", []),
@@ -239,6 +280,7 @@ class SaveParser:
                 "has_emerald_key": False,
                 "has_sapphire_key": False,
                 "boss": "Unknown",
+                "elites_defeated": [],
                 "path_taken": [],
                 "current_room": "Unknown",
                 "seed": "Unknown"

@@ -75,19 +75,29 @@ def normalize_relic_id(relic_id: str, kb: Optional[KnowledgeBase] = None) -> str
     Examples:
         "PureWater" → "Pure Water"
         "BagOfPreparation" → "Bag of Preparation"
+        "Molten Egg 2" → "Molten Egg 2" (preserves counter)
     
     Args:
         relic_id: Relic ID from save file
         kb: Optional KnowledgeBase to verify match
         
     Returns:
-        Normalized relic name
+        Normalized relic name (with counter if present)
     """
     if not relic_id:
         return relic_id
     
+    # Extract counter if present (e.g., "Molten Egg 2" → "Molten Egg", counter=2)
+    # Relic counters appear as "RelicName <number>" at the end
+    counter = None
+    base_relic = relic_id
+    counter_match = re.search(r'\s+(\d+)$', relic_id)
+    if counter_match:
+        counter = counter_match.group(1)
+        base_relic = relic_id[:counter_match.start()]
+    
     # Split camelCase into words
-    normalized = re.sub(r'(?<!^)(?=[A-Z])', ' ', relic_id)
+    normalized = re.sub(r'(?<!^)(?=[A-Z])', ' ', base_relic)
     
     # Clean up multiple spaces
     normalized = re.sub(r'\s+', ' ', normalized).strip()
@@ -98,7 +108,8 @@ def normalize_relic_id(relic_id: str, kb: Optional[KnowledgeBase] = None) -> str
     # Try to find exact match in knowledge base
     if kb:
         if kb.get_relic_data(normalized):
-            return normalized
+            # Return with counter if present
+            return f"{normalized} {counter}" if counter else normalized
         
         # Try fuzzy match
         from rapidfuzz import process, fuzz
@@ -111,9 +122,11 @@ def normalize_relic_id(relic_id: str, kb: Optional[KnowledgeBase] = None) -> str
                 scorer=fuzz.ratio
             )
             if match and match[1] >= 80:
-                return match[0]
+                matched_name = match[0]
+                return f"{matched_name} {counter}" if counter else matched_name
     
-    return normalized
+    # Return with counter if present
+    return f"{normalized} {counter}" if counter else normalized
 
 
 def normalize_potion_id(potion_id: str, kb: Optional[KnowledgeBase] = None) -> str:

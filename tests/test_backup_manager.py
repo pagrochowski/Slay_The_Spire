@@ -177,15 +177,15 @@ class TestBackupManager:
         saves_dir, backup_dir = test_dirs
         manager = BackupManager(saves_dir, backup_dir)
         
-        # Create some backups
+        # Create some backups with size > 1MB so total_size_mb rounds to > 0
         for i in range(3):
             backup = backup_dir / f"IRONCLAD_{i}.autosave"
-            backup.write_text("x" * 1024)  # 1KB each
+            backup.write_text("x" * (500 * 1024))  # 500KB each = 1.5MB total
         
         stats = manager.get_backup_stats()
         
         assert stats["total_backups"] == 3
-        assert stats["total_size_mb"] > 0
+        assert stats["total_size_mb"] > 0  # 1.5MB rounds to 1.46 MB
         assert stats["oldest_backup"] is not None
         assert stats["newest_backup"] is not None
     

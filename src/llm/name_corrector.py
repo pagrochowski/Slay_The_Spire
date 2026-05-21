@@ -80,6 +80,13 @@ class NameCorrector:
         available_cards = self.kb.get_choosable_cards_for_character(character)
         available_relics = self.kb.get_all_relics() if include_relics else []
         
+        # Try to detect and split concatenated words (e.g., "sashwhipplus" → "sash whip plus")
+        transcribed_text = self._try_split_concatenated_words(
+            transcribed_text,
+            available_cards,
+            available_relics
+        )
+        
         # Build prompt
         prompt = self._build_correction_prompt(
             transcribed_text,
@@ -100,7 +107,61 @@ class NameCorrector:
         # Parse result
         cards, relics = self._parse_correction_result(result)
         
-        # Fallback: Use fuzzy matching for unmatched words
+        # Second pass: If there are unmatched words, try again with focused prompt
+        unmatched_words = self._get_unmatched_words(transcribed_text, cards, relics)
+        if unmatched_words:
+            log.info(f"Second pass: Attempting to match {len(unmatched_words)} unmatched words")
+            log_operation(log, "second_pass_start", {
+                "unmatched_words": ", ".join(sorted(unmatched_words)),
+                "unmatched_count": len(unmatched_words)
+            })
+            
+            # Build focused second-pass prompt
+            second_pass_prompt = self._build_second_pass_prompt(
+                unmatched_words,
+                available_cards,
+                available_relics,
+                cards,
+                relics
+            )
+            
+            # Try models again with focused prompt
+            second_result = self._try_models_with_fallback(second_pass_prompt)
+            
+            if second_result:
+                second_cards, second_relics = self._parse_correction_result(second_result)
+                
+                # Validate second-pass matches: Only accept if they contain part of unmatched words
+                validated_cards = []
+                validated_relics = []
+                
+                for card in second_cards:
+                    if card not in cards:
+                        if self._validate_second_pass_match(card, unmatched_words):
+                            cards.append(card)
+                            validated_cards.append(card)
+                            log.info(f"Second pass matched: {card}")
+                        else:
+                            log.debug(f"Second pass rejected (no substring match): {card}")
+                
+                for relic in second_relics:
+                    if relic not in relics:
+                        if self._validate_second_pass_match(relic, unmatched_words):
+                            relics.append(relic)
+                            validated_relics.append(relic)
+                            log.info(f"Second pass matched: {relic}")
+                        else:
+                            log.debug(f"Second pass rejected (no substring match): {relic}")
+                
+                log_operation(log, "second_pass_complete", {
+                    "new_cards": len(validated_cards),
+                    "new_relics": len(validated_relics),
+                    "rejected": (len(second_cards) - len(validated_cards)) + (len(second_relics) - len(validated_relics))
+                })
+            else:
+                log.warning("Second pass failed - no response from LLM")
+        
+        # Final fallback: Use fuzzy matching for any still-unmatched words
         cards, relics = self._fuzzy_fallback(
             transcribed_text,
             cards,
@@ -118,6 +179,111 @@ class NameCorrector:
         })
         
         return (cards, relics)
+    
+    def _try_split_concatenated_words(
+        self,
+        text: str,
+        available_cards: List[str],
+        available_relics: List[str]
+    ) -> str:
+        """
+        Try to split concatenated words by finding card/relic names within them.
+        
+        Example: "sashwhipplus" → "sash whip plus"
+        
+        This is a heuristic to fix Whisper transcription errors where it omits spaces.
+        
+        Args:
+            text: Transcribed text (may have concatenated words)
+            available_cards: All available card names
+            available_relics: All available relic names
+            
+        Returns:
+            Text with spaces added where card/relic names were found
+        """
+        words = text.split()
+        fixed_words = []
+        
+        for word in words:
+            # If word is short or has spaces, keep as-is
+            if len(word) < 6 or ' ' in word:
+                fixed_words.append(word)
+                continue
+            
+            # Try to find card/relic names in this word
+            split_result = self._find_names_in_concatenated_word(
+                word,
+                available_cards + available_relics
+            )
+            
+            if split_result:
+                log.info(f"Split concatenated word: '{word}' → '{split_result}'")
+                fixed_words.append(split_result)
+            else:
+                fixed_words.append(word)
+        
+        return ' '.join(fixed_words)
+    
+    def _find_names_in_concatenated_word(
+        self,
+        concatenated: str,
+        available_names: List[str]
+    ) -> Optional[str]:
+        """
+        Try to find card/relic names within a concatenated word.
+        
+        Example: "sashwhipplus" contains "sash whip" (a card name when spaces are added)
+        
+        Strategy:
+        1. Normalize the concatenated word (lowercase, remove hyphens/spaces)
+        2. For each card/relic, normalize it the same way
+        3. Check if the normalized card name appears in the concatenated word
+        4. If found, extract it and try to split the rest recursively
+        
+        Args:
+            concatenated: Concatenated word to split
+            available_names: List of card/relic names to look for
+            
+        Returns:
+            Split string with spaces, or None if no split found
+        """
+        concat_lower = concatenated.lower().replace('-', '').replace(' ', '')
+        
+        # Try to find names that appear in the concatenated word
+        best_match = None
+        best_match_len = 0
+        
+        for name in available_names:
+            name_normalized = name.lower().replace('-', '').replace(' ', '')
+            
+            # Check if this name appears in the concatenated word
+            if name_normalized in concat_lower:
+                if len(name_normalized) > best_match_len:
+                    best_match = name
+                    best_match_len = len(name_normalized)
+        
+        if best_match:
+            # Found a match! Return it as a split
+            name_normalized = best_match.lower().replace('-', '').replace(' ', '')
+            
+            # Find where it appears in the original concatenated word
+            start_idx = concat_lower.find(name_normalized)
+            
+            # Get the parts before and after
+            before = concatenated[:start_idx]
+            after = concatenated[start_idx + len(name_normalized):]
+            
+            # Build the result
+            parts = []
+            if before:
+                parts.append(before)
+            parts.append(best_match)
+            if after:
+                parts.append(after)
+            
+            return ' '.join(parts)
+        
+        return None
     
     def _build_correction_prompt(
         self,
@@ -149,18 +315,35 @@ CRITICAL FUZZY MATCHING RULES:
    - "battle him" → "Battle Hymn"
 5. Handle capitalization differences ("third eye" → "Third Eye")
 6. Handle word variations ("a thousand cuts" → "A Thousand Cuts")
-7. Only return names from the available lists above
-8. Return ALL matches you find - don't stop at the first one
+7. **MATCH PARTIAL WORDS TO FULL CARD NAMES**:
+   - If you see "lucky", search the available cards for names containing "lucky"
+   - "trust lucky" → "Just Lucky" (ignore "trust", match "lucky" to "Just Lucky")
+   - "fist" alone could be "Empty Fist" or other cards with "Fist"
+   - "follow up" → "Follow-Up" (match spaces to hyphens)
+   - When a word appears IN a card name, return the FULL card name from the list
+8. **HANDLE SPACE VARIATIONS**:
+   - "war cry" (two words) → "Warcry" (one word) - users often add spaces
+   - "warcry" (no space) → "Warcry" (correct)
+   - Check both with and without spaces when matching
+   - IMPORTANT: Prefer CARDS over RELICS when both match
+9. Only return names from the available lists above - return EXACT names, not partial matches
+10. Return ALL matches you find - don't stop at the first one
 
 COMMON MISTAKES TO AVOID:
 - "wrath" is NOT the same as "Wrath" stance - it's likely "Wreath of Flame" card
 - Always check if a spoken word could be a slight mispronunciation
+- NEVER return partial names like "Lucky" - always return the full name "Just Lucky"
+- Check the available lists for the FULL card/relic name before returning
 
 EXAMPLES:
 - "Third Eye, Wrath of Flame, Weave" → {{"cards": ["Third Eye", "Wreath of Flame", "Weave"], "relics": []}}
 - "wheel kick study wrath of flame" → {{"cards": ["Wheel Kick", "Study", "Wreath of Flame"], "relics": []}}
 - "strike defend" → {{"cards": ["Strike", "Defend"], "relics": []}}
 - "wrath of flame" → {{"cards": ["Wreath of Flame"], "relics": []}}
+- "trust lucky tranquility" → {{"cards": ["Just Lucky", "Tranquility"], "relics": []}}
+- "follow up brilliance" → {{"cards": ["Follow-Up", "Brilliance"], "relics": []}}
+- "war cry" → {{"cards": ["Warcry"], "relics": []}} (NOT "War Paint" relic!)
+- "pommel strike war cry" → {{"cards": ["Pommel Strike", "Warcry"], "relics": []}}
 
 OUTPUT FORMAT (JSON only):
 {{
@@ -169,6 +352,204 @@ OUTPUT FORMAT (JSON only):
 }}
 
 Return ONLY valid JSON matching the format above. No explanations."""
+        
+        return prompt
+    
+    def _get_unmatched_words(
+        self,
+        transcribed_text: str,
+        matched_cards: List[str],
+        matched_relics: List[str]
+    ) -> set:
+        """
+        Get words from transcription that weren't matched by LLM.
+        
+        Args:
+            transcribed_text: Original transcription
+            matched_cards: Cards matched in first pass
+            matched_relics: Relics matched in first pass
+            
+        Returns:
+            Set of unmatched words (lowercase)
+        """
+        import string
+        
+        # Clean transcription: lowercase, remove punctuation
+        cleaned_text = transcribed_text.lower()
+        cleaned_text = cleaned_text.translate(str.maketrans('', '', string.punctuation))
+        
+        # Extract words from transcription
+        transcribed_words = set(cleaned_text.split())
+        
+        # Extract words from matched items (normalize hyphens to spaces)
+        matched_words = set()
+        for item in matched_cards + matched_relics:
+            # Normalize hyphens and split
+            normalized = item.lower().replace('-', ' ')
+            matched_words.update(normalized.split())
+        
+        # Find unmatched words
+        unmatched = transcribed_words - matched_words
+        
+        return unmatched
+    
+    def _validate_second_pass_match(
+        self,
+        match_name: str,
+        unmatched_words: set
+    ) -> bool:
+        """
+        Validate that a second-pass match actually contains part of the unmatched words.
+        
+        This prevents the LLM from hallucinating matches that have nothing to do with
+        the input. For example, "sashwhipplus" should not match "Just Lucky" because
+        "Just Lucky" doesn't contain "sash", "whip", "plus", or any substring of "sashwhipplus".
+        
+        Args:
+            match_name: Card/relic name to validate
+            unmatched_words: Set of unmatched words from transcription
+            
+        Returns:
+            True if match contains a substring of unmatched words, False otherwise
+        """
+        match_lower = match_name.lower().replace('-', '').replace(' ', '')
+        
+        for word in unmatched_words:
+            word_lower = word.lower().replace('-', '').replace(' ', '')
+            
+            # Check if the word appears in the match
+            if word_lower in match_lower:
+                log.debug(f"Validated: '{match_name}' contains '{word}'")
+                return True
+            
+            # Check if the match appears in the word (for concatenated words like "sashwhipplus")
+            if match_lower in word_lower:
+                log.debug(f"Validated: '{word}' contains '{match_name}'")
+                return True
+            
+            # Check for partial overlap (at least 4 characters)
+            # Check substrings from unmatched word in match name
+            for i in range(len(word_lower) - 3):
+                substring = word_lower[i:i+4]
+                if substring in match_lower:
+                    log.debug(f"Validated: '{match_name}' contains substring '{substring}' from '{word}'")
+                    return True
+            
+            # Check substrings from match name in unmatched word
+            for i in range(len(match_lower) - 3):
+                substring = match_lower[i:i+4]
+                if substring in word_lower:
+                    log.debug(f"Validated: '{word}' contains substring '{substring}' from '{match_name}'")
+                    return True
+        
+        log.debug(f"Rejected: '{match_name}' has no substring match with {unmatched_words}")
+        return False
+    
+    def _build_second_pass_prompt(
+        self,
+        unmatched_words: set,
+        available_cards: List[str],
+        available_relics: List[str],
+        already_matched_cards: List[str],
+        already_matched_relics: List[str]
+    ) -> str:
+        """
+        Build focused second-pass prompt for unmatched words.
+        
+        This prompt is more aggressive about partial matching since we know
+        these words weren't matched in the first pass.
+        
+        Args:
+            unmatched_words: Words that weren't matched in first pass
+            available_cards: All available card names
+            available_relics: All available relic names
+            already_matched_cards: Cards already matched (to avoid re-checking)
+            already_matched_relics: Relics already matched
+            
+        Returns:
+            Focused LLM prompt
+        """
+        unmatched_text = " ".join(sorted(unmatched_words))
+        
+        prompt = f"""You are a Slay the Spire card/relic name matcher doing a SECOND PASS focused match.
+
+FIRST PASS RESULTS:
+- Already matched cards: {json.dumps(already_matched_cards)}
+- Already matched relics: {json.dumps(already_matched_relics)}
+
+UNMATCHED WORDS FROM TRANSCRIPTION:
+"{unmatched_text}"
+
+These words were NOT matched in the first pass. Your job is to find cards/relics that contain these words or are close matches.
+
+AVAILABLE CARDS:
+{json.dumps(available_cards, indent=2)}
+
+AVAILABLE RELICS:
+{json.dumps(available_relics, indent=2)}
+
+SECOND PASS MATCHING RULES (STRICTER SUBSTRING MATCHING):
+1. **CRITICAL: Only match if the unmatched word is a SUBSTRING of the card/relic name**:
+   - "lucky" IS a substring of "Just Lucky" → MATCH ✅
+   - "fist" IS a substring of "Empty Fist" → MATCH ✅
+   - "him" IS a substring of "Battle Hymn" (phonetically: him → hym) → MATCH ✅
+   - "sashwhipplus" contains "sash" and "whip" which are in "Sash Whip" → MATCH ✅
+   - BUT "lucky" is NOT a substring of "Follow-Up" → NO MATCH ❌
+   
+2. **Check both directions**:
+   - Does the unmatched word appear IN the card name? ("lucky" in "Just Lucky")
+   - Does the card name appear IN the unmatched word? ("Sash Whip" → "sashwhip" in "sashwhipplus")
+   
+3. **For concatenated words** (like "sashwhipplus"):
+   - Try to find card names that appear when you remove spaces/hyphens
+   - "sashwhip" (from "sashwhipplus") matches "Sash Whip" ✅
+   
+4. **Phonetic errors** (be conservative):
+   - "him" sounds like "hymn" → "Battle Hymn" ✅
+   - "wrath" sounds like "wreath" → "Wreath of Flame" ✅
+   - But don't match random cards!
+   
+5. **Space variations**:
+   - "war cry" (two words) → "Warcry" (one word)
+   - Try removing spaces to find matches
+   - CRITICAL: Prefer CARDS over RELICS when both match
+   
+6. **STRICT RULE**: If you can't find a clear substring or phonetic connection, DO NOT match
+   
+7. **Do NOT return items already matched in the first pass**
+
+8. **Return FULL exact names from the available lists, not partial matches**
+
+9. **PREFER CARDS OVER RELICS**: If both a card and relic match, return the CARD
+
+EXAMPLES:
+- Unmatched: "lucky" → {{"cards": ["Just Lucky"], "relics": []}}
+  (Because "lucky" appears in "Just Lucky")
+  
+- Unmatched: "fist" → {{"cards": ["Empty Fist"], "relics": []}}
+  (Because "fist" appears in "Empty Fist")
+  
+- Unmatched: "sashwhipplus" → {{"cards": ["Sash Whip"], "relics": []}}
+  (Because "sashwhip" = normalized "Sash Whip")
+  
+- Unmatched: "trust" → {{"cards": [], "relics": []}}
+  (No card contains "trust" - return empty!)
+  
+- Unmatched: "him" → {{"cards": ["Battle Hymn"], "relics": []}}
+  (Phonetic match: "him" → "hym" in "Hymn")
+  
+- Unmatched: "war cry" → {{"cards": ["Warcry"], "relics": []}}
+  (Space variation: "war cry" → "Warcry", prefer card over "War Paint" relic)
+
+IMPORTANT: Return ONLY cards that have a clear substring relationship. Empty results are OK!
+
+OUTPUT FORMAT (JSON only):
+{{
+  "cards": ["Exact Card Name 1"],
+  "relics": ["Exact Relic Name 1"]
+}}
+
+Return ONLY valid JSON. Be STRICT - substring matching required."""
         
         return prompt
     

@@ -100,18 +100,32 @@ class RunSummaryGenerator:
         Format a relic with its description.
         
         Args:
-            relic_name: Relic name
+            relic_name: Relic name (may include counter like "Molten Egg 2")
             
         Returns:
-            Formatted string: "RelicName: Description"
+            Formatted string: "RelicName (Counter: X): Description"
         """
-        relic_data = self.kb.get_relic_data(relic_name)
+        # Extract counter if present (e.g., "Molten Egg 2" → "Molten Egg", counter=2)
+        import re
+        counter = None
+        base_name = relic_name
+        counter_match = re.search(r'\s+(\d+)$', relic_name)
+        if counter_match:
+            counter = counter_match.group(1)
+            base_name = relic_name[:counter_match.start()]
+        
+        relic_data = self.kb.get_relic_data(base_name)
         
         if not relic_data:
             return f"{relic_name}"  # Just return name if not found
         
         description = relic_data.get("description", "")
-        return f"{relic_name}: {description}"
+        
+        # Format with counter if present
+        if counter:
+            return f"{base_name} (Counter: {counter}): {description}"
+        else:
+            return f"{base_name}: {description}"
     
     def _format_potion_with_description(self, potion_name: str) -> str:
         """
@@ -189,6 +203,13 @@ class RunSummaryGenerator:
         # Boss
         boss = run_data.get("boss", "Unknown")
         
+        # Elites defeated
+        elites = run_data.get("elites_defeated", [])
+        if elites:
+            elites_text = ", ".join(elites)
+        else:
+            elites_text = "None"
+        
         # Format deck
         deck_cards = self._format_deck_cards(run_data.get("deck", []))
         deck_section = "\n".join(f"- {card}" for card in deck_cards)
@@ -229,7 +250,7 @@ class RunSummaryGenerator:
 
 ## Boss & Elites
 - **Current Boss**: {boss}
-- **Elites defeated this act:** None
+- **Elites defeated this act:** {elites_text}
 
 """
         

@@ -21,8 +21,8 @@ class TestNameCorrector:
         # Mock knowledge base
         self.mock_kb = MagicMock(spec=KnowledgeBase)
         
-        # Set up mock card/relic data
-        self.mock_kb.get_cards_for_character.return_value = [
+        # Set up mock card/relic data - return actual lists, not MagicMock
+        self.mock_kb.get_choosable_cards_for_character.return_value = [
             "Strike", "Defend", "Eruption", "Vigilance", "Battle Hymn"
         ]
         self.mock_kb.get_all_relics.return_value = [
@@ -83,13 +83,12 @@ class TestNameCorrector:
         pass
     
     # Model timeout tests
-    @patch('groq.Groq')
     @patch('threading.Thread')
-    def test_call_model_with_timeout_success(self, mock_thread_class, mock_groq):
+    def test_call_model_with_timeout_success(self, mock_thread_class):
         """Test successful model call within timeout."""
-        # Mock Groq client
+        # Mock the corrector's client directly
         mock_client = MagicMock()
-        mock_groq.return_value = mock_client
+        self.corrector.client = mock_client
         
         # Mock successful response
         mock_response = MagicMock()
@@ -97,10 +96,16 @@ class TestNameCorrector:
         mock_response.choices[0].message.content = '{"cards": ["Strike"], "relics": []}'
         mock_client.chat.completions.create.return_value = mock_response
         
-        # Mock thread that completes immediately
-        mock_thread = MagicMock()
-        mock_thread.is_alive.return_value = False  # Thread finished
-        mock_thread_class.return_value = mock_thread
+        # Mock thread that completes immediately and calls the target function
+        def mock_thread_init(target=None, *args, **kwargs):
+            mock_thread = MagicMock()
+            mock_thread.is_alive.return_value = False  # Thread finished
+            # Execute the target function immediately to simulate successful completion
+            if target:
+                target()
+            return mock_thread
+        
+        mock_thread_class.side_effect = mock_thread_init
         
         result = self.corrector._call_model_with_timeout(
             "llama-3.1-8b-instant",
@@ -286,7 +291,7 @@ class TestNameCorrector:
         assert relics == []
         
         # Verify KB was called correctly
-        self.mock_kb.get_cards_for_character.assert_called_with("watcher")
+        self.mock_kb.get_choosable_cards_for_character.assert_called_with("watcher")
         self.mock_kb.get_all_relics.assert_not_called()
     
     # Edge cases
