@@ -67,3 +67,6 @@ htmlcov/
 
 # Audio files
 *.wav
+
+# Autosave files
+*.autosave
