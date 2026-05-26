@@ -116,10 +116,10 @@ class TestVoiceRecorder:
         
         # Add audio data when the stream context is entered
         original_enter = mock_input_stream.return_value.__enter__
-        def patched_enter():
+        def patched_enter(self_arg):
             # Populate audio_data after stream is created
             self.recorder.audio_data.append(self.test_audio)
-            return original_enter()
+            return mock_stream
         mock_input_stream.return_value.__enter__ = patched_enter
         
         result = self.recorder.record_audio(max_duration=5.0)
@@ -172,10 +172,10 @@ class TestVoiceRecorder:
         
         # Populate audio_data after entering the context
         original_enter = mock_input_stream.return_value.__enter__
-        def patched_enter():
+        def patched_enter(self_arg):
             # Add some audio data when the stream context is entered
             self.recorder.audio_data.append(self.test_audio)
-            return original_enter()
+            return mock_stream
         mock_input_stream.return_value.__enter__ = patched_enter
         
         result = self.recorder.record_audio(max_duration=3.0)

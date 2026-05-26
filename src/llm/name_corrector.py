@@ -102,6 +102,27 @@ class NameCorrector:
             log_operation(log, "correct_names_failed", {
                 "text": transcribed_text
             }, level="ERROR")
+            
+            # Emergency fallback: Use fuzzy matching directly when all LLMs fail
+            log.warning("Attempting emergency fuzzy fallback with lower threshold")
+            cards, relics = self._fuzzy_fallback(
+                transcribed_text,
+                [],  # No LLM results
+                [],
+                available_cards,
+                available_relics,
+                threshold=75  # Lower threshold for emergency mode
+            )
+            
+            if cards or relics:
+                log.info(f"Emergency fallback found {len(cards)} cards, {len(relics)} relics")
+                log_operation(log, "emergency_fallback_success", {
+                    "cards_found": len(cards),
+                    "relics_found": len(relics),
+                    "cards": ", ".join(cards[:3]) if cards else "none"
+                })
+                return (cards, relics)
+            
             return ([], [])
         
         # Parse result
@@ -109,6 +130,10 @@ class NameCorrector:
         
         # Second pass: If there are unmatched words, try again with focused prompt
         unmatched_words = self._get_unmatched_words(transcribed_text, cards, relics)
+        
+        # Filter out very short words (1-2 chars) - they cause too many false matches
+        unmatched_words = {w for w in unmatched_words if len(w) >= 3}
+        
         if unmatched_words:
             log.info(f"Second pass: Attempting to match {len(unmatched_words)} unmatched words")
             log_operation(log, "second_pass_start", {
@@ -138,11 +163,22 @@ class NameCorrector:
                 for card in second_cards:
                     if card not in cards:
                         if self._validate_second_pass_match(card, unmatched_words):
-                            cards.append(card)
                             validated_cards.append(card)
                             log.info(f"Second pass matched: {card}")
                         else:
                             log.debug(f"Second pass rejected (no substring match): {card}")
+                
+                # Safety check: If too many cards matched, something went wrong
+                MAX_SECOND_PASS_MATCHES = 5
+                if len(validated_cards) > MAX_SECOND_PASS_MATCHES:
+                    log.warning(f"Second pass matched {len(validated_cards)} cards - too many! Likely over-matching.")
+                    log.warning(f"Unmatched words were: {unmatched_words}")
+                    log.warning(f"Rejecting all second-pass matches as likely false positives")
+                    validated_cards = []
+                
+                # Add validated cards to results
+                for card in validated_cards:
+                    cards.append(card)
                 
                 for relic in second_relics:
                     if relic not in relics:
@@ -263,25 +299,35 @@ class NameCorrector:
                     best_match_len = len(name_normalized)
         
         if best_match:
-            # Found a match! Return it as a split
+            # Found a match!
             name_normalized = best_match.lower().replace('-', '').replace(' ', '')
             
-            # Find where it appears in the original concatenated word
+            # If the entire word matches (after normalization), just return the match
+            if concat_lower == name_normalized:
+                log.debug(f"Complete match: '{concatenated}' → '{best_match}'")
+                return best_match
+            
+            # Otherwise, split the word
+            # Find where it appears in the NORMALIZED concatenated word
             start_idx = concat_lower.find(name_normalized)
             
-            # Get the parts before and after
-            before = concatenated[:start_idx]
-            after = concatenated[start_idx + len(name_normalized):]
+            # Calculate positions in the original word
+            # This is tricky because normalization removes characters
+            # Simpler approach: return the match + remaining parts
+            before_normalized = concat_lower[:start_idx]
+            after_normalized = concat_lower[start_idx + len(name_normalized):]
             
             # Build the result
             parts = []
-            if before:
-                parts.append(before)
+            if before_normalized:
+                parts.append(before_normalized)
             parts.append(best_match)
-            if after:
-                parts.append(after)
+            if after_normalized:
+                parts.append(after_normalized)
             
-            return ' '.join(parts)
+            result = ' '.join(parts)
+            log.debug(f"Split: '{concatenated}' → '{result}'")
+            return result
         
         return None
     
@@ -374,22 +420,34 @@ Return ONLY valid JSON matching the format above. No explanations."""
         """
         import string
         
-        # Clean transcription: lowercase, remove punctuation
+        # Clean transcription: lowercase, remove punctuation INCLUDING hyphens
+        # This ensures "multicast" matches "Multi-Cast"
         cleaned_text = transcribed_text.lower()
         cleaned_text = cleaned_text.translate(str.maketrans('', '', string.punctuation))
         
         # Extract words from transcription
         transcribed_words = set(cleaned_text.split())
         
-        # Extract words from matched items (normalize hyphens to spaces)
+        # Extract words from matched items (normalize hyphens to spaces, remove punctuation)
         matched_words = set()
         for item in matched_cards + matched_relics:
-            # Normalize hyphens and split
+            # Normalize hyphens and remove punctuation
             normalized = item.lower().replace('-', ' ')
+            normalized = normalized.translate(str.maketrans('', '', string.punctuation))
             matched_words.update(normalized.split())
+        
+        # Also add the full matched item names (without hyphens/punctuation)
+        # This catches cases like "multicast" matching "Multi-Cast"
+        for item in matched_cards + matched_relics:
+            normalized_full = item.lower().replace('-', '').replace(' ', '')
+            normalized_full = normalized_full.translate(str.maketrans('', '', string.punctuation))
+            if normalized_full:
+                matched_words.add(normalized_full)
         
         # Find unmatched words
         unmatched = transcribed_words - matched_words
+        
+        return unmatched
         
         return unmatched
     
@@ -723,22 +781,8 @@ Return ONLY valid JSON. Be STRICT - substring matching required."""
         Returns:
             Updated (cards, relics) with fallback matches added
         """
-        import string
-        
-        # Clean transcription: lowercase, remove punctuation
-        cleaned_text = transcribed_text.lower()
-        cleaned_text = cleaned_text.translate(str.maketrans('', '', string.punctuation))
-        
-        # Extract words from cleaned transcription
-        transcribed_words = set(cleaned_text.split())
-        
-        # Extract words from matched items
-        matched_words = set()
-        for item in llm_cards + llm_relics:
-            matched_words.update(item.lower().split())
-        
-        # Find unmatched words
-        unmatched_words = transcribed_words - matched_words
+        # Use the same logic as _get_unmatched_words() to ensure consistency
+        unmatched_words = self._get_unmatched_words(transcribed_text, llm_cards, llm_relics)
         
         if not unmatched_words:
             log.debug("All words matched by LLM, no fallback needed")
@@ -791,7 +835,39 @@ Return ONLY valid JSON. Be STRICT - substring matching required."""
                     fallback_relics.append(match_name)
                     break  # Only add the best multi-word match
         
+        # Try all two-word combinations (e.g., "steam barrier" → "Steam Barrier")
+        unmatched_list = list(unmatched_words)
+        for i in range(len(unmatched_list)):
+            for j in range(i+1, len(unmatched_list)):
+                pair = f"{unmatched_list[i]} {unmatched_list[j]}"
+                
+                # Try cards
+                if available_cards:
+                    card_matches = process.extract(
+                        pair,
+                        available_cards,
+                        scorer=fuzz.token_sort_ratio,
+                        limit=1
+                    )
+                    if card_matches and card_matches[0][1] >= 75 and card_matches[0][0] not in fallback_cards:
+                        log.info(f"Fuzzy match (card pair): '{pair}' → '{card_matches[0][0]}' (score: {card_matches[0][1]})")
+                        fallback_cards.append(card_matches[0][0])
+                
+                # Try relics
+                if available_relics:
+                    relic_matches = process.extract(
+                        pair,
+                        available_relics,
+                        scorer=fuzz.token_sort_ratio,
+                        limit=1
+                    )
+                    if relic_matches and relic_matches[0][1] >= 75 and relic_matches[0][0] not in fallback_relics:
+                        log.info(f"Fuzzy match (relic pair): '{pair}' → '{relic_matches[0][0]}' (score: {relic_matches[0][1]})")
+                        fallback_relics.append(relic_matches[0][0])
+        
         # Also try individual unmatched words
+        # Use threshold parameter for single-word matches (default 70)
+        single_word_threshold = max(threshold, 75)  # At least 75 for single words
         for word in unmatched_words:
             if len(word) < 4:  # Skip short words (was 3, now 4)
                 continue
@@ -803,7 +879,7 @@ Return ONLY valid JSON. Be STRICT - substring matching required."""
                     available_cards,
                     scorer=fuzz.ratio  # Changed from partial_ratio to ratio (more strict)
                 )
-                if best_card and best_card[1] >= 85 and best_card[0] not in fallback_cards:  # Increased threshold
+                if best_card and best_card[1] >= single_word_threshold and best_card[0] not in fallback_cards:
                     log.info(f"Fuzzy match (card): '{word}' → '{best_card[0]}' (score: {best_card[1]})")
                     fallback_cards.append(best_card[0])
             
@@ -814,7 +890,7 @@ Return ONLY valid JSON. Be STRICT - substring matching required."""
                     available_relics,
                     scorer=fuzz.ratio  # Changed from partial_ratio to ratio (more strict)
                 )
-                if best_relic and best_relic[1] >= 85 and best_relic[0] not in fallback_relics:  # Increased threshold
+                if best_relic and best_relic[1] >= single_word_threshold and best_relic[0] not in fallback_relics:
                     log.info(f"Fuzzy match (relic): '{word}' → '{best_relic[0]}' (score: {best_relic[1]})")
                     fallback_relics.append(best_relic[0])
         

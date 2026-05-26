@@ -3,15 +3,14 @@
 ## Run Information
 - **Character**: DEFECT
 - **Ascension**: 4
-- **Act**: 2
+- **Act**: 1
 
 ## Current Status
-- **HP**: 56/75
-- **Gold**: 410
+- **HP**: 61/75
+- **Gold**: 364
 
-## Deck (19 cards)
+## Deck (17 cards)
 - Ball Lightning [1] (Attack): Deal 7 damage. Channel 1 Lightning.
-- Buffer [2] (Power): Prevent the next time you would lose HP.
 - Cold Snap [1] (Attack): Deal 6 damage. Channel 1 Frost.
 - Conserve Battery
 - Coolheaded [1] (Skill): Channel 1 Frost. Draw 1 card.
@@ -22,7 +21,6 @@
 - Steam Power
 - Streamline [2] (Attack): Deal 15 damage. Reduce this card's cost by 1 this combat.
 - 2x Strike [1] (Attack): Deal 6 damage.
-- Sunder+ [3] (Attack): Deal 32 damage. If this kills an enemy, gain [B] [B] [B].
 - Undo
 - Zap [1] (Skill): Channel 1 Lightning.
 
@@ -33,12 +31,11 @@
 - Winged Greaves
 - Medical Kit: Unplayable Status cards can now be played. Whenever you play a Status card, Exhaust it.
 - Old Coin: Upon pickup, gain 300 Gold.
-- Inserter: Every 2 turns, gain 1 Orb slot.
 
 ## Potions
-- Strength Potion: Gain 2 Strength.
 - Potion Slot
-- Potion Slot
+- Speed Potion: Gain 5 Dexterity. At the end of your turn, lose 5 Dexterity.
+- Liquid Bronze: Gain 3 Thorns.
 
 ## Keys
 - Ruby: ✗
@@ -46,12 +43,10 @@
 - Sapphire: ✗
 
 ## Boss & Elites
-- **Current Boss**: Champ
-- **Elites defeated this act:** None
+- **Current Boss**: Slime Boss
+- **Elites defeated this act:** Gremlin Nob, 3 Sentries
 
 **Current choice:**
-- Rebound [1] (Attack): Deal 9 damage. Put the next card you play this turn on top of your draw pile.
-- Reprogram [1] (Skill): Lose 2 Focus. Gain 1 Strength. Gain 1 Dexterity.
 - SKIP?
 
 ---

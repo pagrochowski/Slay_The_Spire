@@ -195,9 +195,9 @@ def normalize_character_name(filename: str) -> str:
     # Get stem (filename without extension)
     stem = Path(filename).stem.upper()
     
-    # Extract character name (everything before first underscore or number)
-    # Match: WATCHER, IRONCLAD, SILENT, DEFECT
-    match = re.match(r'^(WATCHER|IRONCLAD|SILENT|DEFECT)', stem)
+    # Extract character name (handle optional 'THE_' prefix used in some save names)
+    # Match examples: WATCHER, IRONCLAD, SILENT, DEFECT, or THE_SILENT
+    match = re.match(r'^(?:THE_)?(WATCHER|IRONCLAD|SILENT|DEFECT)', stem)
     if match:
         return match.group(1)
     

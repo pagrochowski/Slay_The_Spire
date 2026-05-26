@@ -193,11 +193,11 @@ class TestUpgradeDetection:
         text = "Strike+Defend"
         cleaned, upgrades = detect_upgrades(text)
         
-        # "Strike+Defend" is one word, stripped to "Strike Defend"... wait, no
-        # split() gives ["Strike+Defend"], strip() gives "Strike Defend"... no
         # strip(punctuation) only strips from START and END, not middle
-        # So "Strike+Defend" stays as one word after strip
-        assert "strike" in upgrades or "strikedefend" in upgrades.keys()
+        # So "Strike+Defend" becomes "strike+defend" (lowercased, + stays in middle)
+        assert "strike+defend" in upgrades.keys(), f"Expected 'strike+defend' in {upgrades.keys()}"
+        # The whole thing is treated as one word
+        assert upgrades["strike+defend"] == False  # No 'plus' keyword after it
 
 
 def test_real_world_examples():
