@@ -1,8 +1,9 @@
 {
-  "floor": 6,
+  "floor": 17,
   "act": 1,
   "cards": [],
   "relics": [
-    "Akabeko"
+    "Frozen Core",
+    "Sozu"
   ]
 }

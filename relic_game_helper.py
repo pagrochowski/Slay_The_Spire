@@ -11,6 +11,7 @@ Workflow:
 
 import io
 import ctypes
+import struct
 import threading
 import time
 from datetime import datetime
@@ -77,6 +78,74 @@ def find_slay_the_spire_window():
     return None, None
 
 
+def get_window_metrics(hwnd):
+    """Get window and client geometry in screen coordinates."""
+    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+    client_rect = win32gui.GetClientRect(hwnd)
+    client_left_top = win32gui.ClientToScreen(hwnd, (client_rect[0], client_rect[1]))
+    client_right_bottom = win32gui.ClientToScreen(hwnd, (client_rect[2], client_rect[3]))
+
+    return {
+        "window": (left, top, right, bottom),
+        "client_offset": (
+            max(client_left_top[0] - left, 0),
+            max(client_left_top[1] - top, 0),
+            min(client_right_bottom[0] - left, right - left),
+            min(client_right_bottom[1] - top, bottom - top),
+        ),
+    }
+
+
+def crop_to_client(image: Image.Image, metrics) -> Image.Image:
+    """Crop a window capture down to its client area when possible."""
+    crop_left, crop_top, crop_right, crop_bottom = metrics["client_offset"]
+    if crop_right > crop_left and crop_bottom > crop_top:
+        return image.crop((crop_left, crop_top, crop_right, crop_bottom))
+    return image
+
+
+def image_from_bitmap(bitmap) -> Image.Image:
+    """Convert a pywin32 bitmap into a Pillow image."""
+    info = bitmap.GetInfo()
+    raw = bitmap.GetBitmapBits(True)
+    return Image.frombuffer(
+        "RGB",
+        (info["bmWidth"], info["bmHeight"]),
+        raw,
+        "raw",
+        "BGRX",
+        0,
+        1,
+    )
+
+
+def capture_game_window_background(hwnd) -> Image.Image:
+    """Capture the game window in the background using the successful PrintWindow backend."""
+    metrics = get_window_metrics(hwnd)
+    left, top, right, bottom = metrics["window"]
+    width = right - left
+    height = bottom - top
+
+    window_dc = win32gui.GetWindowDC(hwnd)
+    src_dc = win32ui.CreateDCFromHandle(window_dc)
+    mem_dc = src_dc.CreateCompatibleDC()
+    bitmap = win32ui.CreateBitmap()
+
+    try:
+        bitmap.CreateCompatibleBitmap(src_dc, width, height)
+        mem_dc.SelectObject(bitmap)
+        result = ctypes.windll.user32.PrintWindow(hwnd, mem_dc.GetSafeHdc(), 2)
+        if result != 1:
+            raise RuntimeError("PrintWindow background capture failed")
+        image = image_from_bitmap(bitmap)
+        return crop_to_client(image, metrics)
+    finally:
+        win32gui.DeleteObject(bitmap.GetHandle())
+        mem_dc.DeleteDC()
+        src_dc.DeleteDC()
+        win32gui.ReleaseDC(hwnd, window_dc)
+
+
 def capture_game_window(hwnd) -> Image.Image:
     """Capture the Slay the Spire client area from the visible screen."""
     left, top, right, bottom = win32gui.GetWindowRect(hwnd)
@@ -141,6 +210,69 @@ def copy_image_to_clipboard(image: Image.Image):
             try:
                 win32clipboard.EmptyClipboard()
                 win32clipboard.SetClipboardData(win32clipboard.CF_DIB, data)
+            finally:
+                win32clipboard.CloseClipboard()
+            return
+        except Exception:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(0.05)
+
+
+def get_next_capture_sequence(capture_dir: Path) -> int:
+    """Return the next monotonically increasing capture sequence number."""
+    max_sequence = 0
+    for image_path in capture_dir.glob("*.png"):
+        stem_parts = image_path.stem.rsplit("_", 1)
+        if len(stem_parts) != 2:
+            continue
+        try:
+            max_sequence = max(max_sequence, int(stem_parts[1]))
+        except ValueError:
+            continue
+    return max_sequence + 1
+
+
+def build_capture_image_path(run_data: dict, capture_dir: Path) -> Path:
+    """Build a stable, descriptive screenshot filename."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    character = str(run_data.get("character", "unknown")).strip().lower() or "unknown"
+    ascension = int(run_data.get("ascension", 0) or 0)
+    floor = int(run_data.get("floor", 0) or 0)
+    sequence = get_next_capture_sequence(capture_dir)
+    filename = f"{timestamp}_{character}_a{ascension}_f{floor}_{sequence:03d}.png"
+    return capture_dir / filename
+
+
+def save_capture_image(image: Image.Image, run_data: dict) -> Path:
+    """Save the screenshot to disk using a descriptive filename."""
+    capture_dir = Config.PROCESSED_DIR / "captures"
+    capture_dir.mkdir(parents=True, exist_ok=True)
+    image_path = build_capture_image_path(run_data, capture_dir)
+    image.save(image_path, format="PNG")
+    return image_path
+
+
+def copy_files_to_clipboard(file_paths: list[Path]):
+    """Copy one or more file references into the Windows clipboard as CF_HDROP."""
+    resolved_paths = [str(path.resolve()) for path in file_paths if path.exists()]
+    if not resolved_paths:
+        raise FileNotFoundError("No files available to attach")
+
+    file_list = "\0".join(resolved_paths) + "\0\0"
+    dropfiles = struct.pack("IiiII", 20, 0, 0, 0, 1)
+    payload = dropfiles + file_list.encode("utf-16le")
+    preferred_drop_effect = struct.pack("I", 1)
+
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            win32clipboard.OpenClipboard()
+            try:
+                win32clipboard.EmptyClipboard()
+                win32clipboard.SetClipboardData(win32con.CF_HDROP, payload)
+                effect_format = win32clipboard.RegisterClipboardFormat("Preferred DropEffect")
+                win32clipboard.SetClipboardData(effect_format, preferred_drop_effect)
             finally:
                 win32clipboard.CloseClipboard()
             return
@@ -237,17 +369,23 @@ def record_relic_choices():
         _is_recording = False
 
 
-def paste_screenshot(screenshot: Image.Image):
-    """Paste the screenshot into the currently focused chat input."""
-    print("Pasting screenshot in 1.5 seconds.")
+def paste_capture_and_summary_files(image_path: Path, summary_path: Path):
+    """Attach the named screenshot file and summary file into the focused chat input."""
+    print("Attaching screenshot and summary files in 1.5 seconds.")
     time.sleep(1.5)
 
-    copy_image_to_clipboard(screenshot)
+    attachment_paths = [image_path]
+    if summary_path.exists():
+        attachment_paths.append(summary_path)
+    else:
+        print(f"{summary_path.name} does not exist; attaching screenshot only.")
+
+    copy_files_to_clipboard(attachment_paths)
     keyboard.press_and_release("ctrl+v")
 
 
 def handle_image_paste():
-    """Capture the game window and paste the image into the focused chat."""
+    """Capture the game window, refresh Run_Summary.md, and paste image plus summary file."""
     global _is_processing
 
     if _is_processing:
@@ -267,11 +405,26 @@ def handle_image_paste():
             return
 
         print(f"Capturing window: {title}")
-        screenshot = capture_visible_game_window(hwnd, previous_hwnd)
-        paste_screenshot(screenshot)
-        print("Screenshot pasted.")
+        try:
+            screenshot = capture_game_window_background(hwnd)
+            print("Using background capture backend: printwindow_full")
+        except Exception as background_error:
+            print(f"Background capture failed, falling back to visible capture: {background_error}")
+            screenshot = capture_visible_game_window(hwnd, previous_hwnd)
+
+        run_data = get_current_run_data()
+        if refresh_run_summary(run_data=run_data):
+            print("Run_Summary.md refreshed.")
+        else:
+            print("Using existing Run_Summary.md.")
+
+        image_path = save_capture_image(screenshot, run_data or {})
+        print(f"Saved screenshot: {image_path.name}")
+
+        paste_capture_and_summary_files(image_path, Config.RUN_SUMMARY_PATH)
+        print("Screenshot and summary files pasted.")
     except Exception as exc:
-        print(f"Error while pasting image: {exc}")
+        print(f"Error while pasting image or summary file: {exc}")
     finally:
         _is_processing = False
 
@@ -284,7 +437,7 @@ def main():
     print("Slay the Spire Relic Helper")
     print("=" * 60)
     print("F1  Hold to record relic choices from the current reward screen")
-    print("F2  Capture the game window and paste the screenshot only")
+    print("F2  Capture the game window and paste screenshot plus Run_Summary.md")
     print("ESC Exit")
     print()
     print("Keep the target LLM chat input focused before pressing F2.")
