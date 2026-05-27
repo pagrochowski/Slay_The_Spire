@@ -12,6 +12,9 @@ aiosqlite>=0.19.0      # Async SQLite support
 python-dotenv>=1.0.0   # Environment variable management
 rich>=13.7.0           # Beautiful terminal output
 loguru>=0.7.2          # Better logging
+Pillow>=10.0.0         # Screenshot capture
+pyperclip>=1.9.0       # Clipboard text paste support
+pywin32>=306           # Windows clipboard and window APIs
 
 # LLM Integration
 groq>=1.0.0            # Groq API client (fast inference + Whisper)

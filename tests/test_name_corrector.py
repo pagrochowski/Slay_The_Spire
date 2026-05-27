@@ -75,6 +75,19 @@ class TestNameCorrector:
         assert "pure water and akabeko" in prompt.lower()
         assert "Pure Water" in prompt
         assert "Akabeko" in prompt
+
+    def test_build_relic_correction_prompt(self):
+        """Test relic-only prompt building."""
+        relics = ["Pure Water", "Akabeko"]
+
+        prompt = self.corrector._build_relic_correction_prompt(
+            "akabeko and pure water",
+            relics
+        )
+
+        assert "akabeko and pure water" in prompt.lower()
+        assert "Pure Water" in prompt
+        assert "Akabeko" in prompt
     
     def test_build_correction_prompt_character_filtering(self):
         """Test that correct cards are provided to prompt builder."""
@@ -293,6 +306,20 @@ class TestNameCorrector:
         # Verify KB was called correctly
         self.mock_kb.get_choosable_cards_for_character.assert_called_with("watcher")
         self.mock_kb.get_all_relics.assert_not_called()
+
+    @patch.object(NameCorrector, '_try_models_with_fallback')
+    def test_correct_relic_names(self, mock_try_models):
+        """Test relic-only correction flow."""
+        mock_try_models.return_value = '{"cards": [], "relics": ["Akabeko", "Pen Nib"]}'
+
+        self.mock_kb.get_relic_data.side_effect = lambda name: {"name": name} if name in ["Akabeko", "Pen Nib"] else None
+        self.mock_kb.get_card_data.return_value = None
+
+        relics = self.corrector.correct_relic_names("akabeko pen nib")
+
+        assert relics == ["Akabeko", "Pen Nib"]
+        self.mock_kb.get_all_relics.assert_called()
+        self.mock_kb.get_choosable_cards_for_character.assert_not_called()
     
     # Edge cases
     @patch.object(NameCorrector, '_try_models_with_fallback')

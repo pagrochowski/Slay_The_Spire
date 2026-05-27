@@ -44,4 +44,6 @@
 **Current choice:**
 As per screenshot
 
+Relics to choose from: Akabeko
+
 ---

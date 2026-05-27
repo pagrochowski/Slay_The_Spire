@@ -59,21 +59,27 @@ class VoiceRecorder:
             # Copy audio data
             self.audio_data.append(indata.copy())
     
-    def record_audio(self, max_duration: float = 30.0) -> Optional[np.ndarray]:
+    def record_audio(
+        self,
+        max_duration: float = 30.0,
+        wait_for_hotkey: bool = True
+    ) -> Optional[np.ndarray]:
         """
         Record audio while F1 is held down.
         
         Args:
             max_duration: Maximum recording duration in seconds
+            wait_for_hotkey: Whether to wait for the hotkey before recording
             
         Returns:
             Numpy array of audio data, or None if recording failed
         """
-        log.info(f"Press and hold {self.hotkey.upper()} to record...")
-        print(f"🎤 Press and hold {self.hotkey.upper()} to record audio...")
-        
-        # Wait for hotkey press
-        keyboard.wait(self.hotkey)
+        if wait_for_hotkey:
+            log.info(f"Press and hold {self.hotkey.upper()} to record...")
+            print(f"🎤 Press and hold {self.hotkey.upper()} to record audio...")
+            keyboard.wait(self.hotkey)
+        else:
+            log.info(f"Recording immediately while {self.hotkey.upper()} is held")
         
         # Start recording
         self.is_recording = True
@@ -179,18 +185,27 @@ class VoiceRecorder:
             }, level="ERROR")
             return False
     
-    def record_to_file(self, output_path: Path, max_duration: float = 30.0) -> bool:
+    def record_to_file(
+        self,
+        output_path: Path,
+        max_duration: float = 30.0,
+        wait_for_hotkey: bool = True
+    ) -> bool:
         """
         Record audio and save directly to file.
         
         Args:
             output_path: Path to save WAV file
             max_duration: Maximum recording duration
+            wait_for_hotkey: Whether to wait for the hotkey before recording
             
         Returns:
             True if recording and save successful, False otherwise
         """
-        audio_data = self.record_audio(max_duration)
+        if wait_for_hotkey:
+            audio_data = self.record_audio(max_duration)
+        else:
+            audio_data = self.record_audio(max_duration, wait_for_hotkey=False)
         
         if audio_data is None:
             return False

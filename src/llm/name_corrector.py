@@ -219,6 +219,64 @@ class NameCorrector:
         })
         
         return (cards, relics)
+
+    def correct_relic_names(self, transcribed_text: str) -> List[str]:
+        """
+        Correct relic names only from transcribed text.
+
+        Args:
+            transcribed_text: Text from voice transcription
+
+        Returns:
+            List of corrected relic names
+        """
+        log.info("Correcting relic names from transcription")
+        log_operation(log, "correct_relic_names_start", {
+            "text_length": len(transcribed_text),
+            "text_preview": transcribed_text[:100]
+        })
+
+        available_relics = self.kb.get_all_relics()
+        transcribed_text = self._try_split_concatenated_words(
+            transcribed_text,
+            [],
+            available_relics
+        )
+
+        prompt = self._build_relic_correction_prompt(transcribed_text, available_relics)
+        result = self._try_models_with_fallback(prompt)
+
+        if result is None:
+            log.warning("Relic-only correction fell back to fuzzy matching")
+            _, relics = self._fuzzy_fallback(
+                transcribed_text,
+                [],
+                [],
+                [],
+                available_relics,
+                threshold=75
+            )
+            relics = list(dict.fromkeys(relics))
+            return relics
+
+        _, relics = self._parse_correction_result(result)
+        _, relics = self._fuzzy_fallback(
+            transcribed_text,
+            [],
+            relics,
+            [],
+            available_relics
+        )
+
+        relics = list(dict.fromkeys(relics))
+
+        log.info("Relic-only correction complete")
+        log_operation(log, "correct_relic_names_complete", {
+            "relics_found": len(relics),
+            "relics": ", ".join(relics[:5]) if relics else "none"
+        })
+
+        return relics
     
     def _try_split_concatenated_words(
         self,
@@ -403,6 +461,43 @@ OUTPUT FORMAT (JSON only):
 
 Return ONLY valid JSON matching the format above. No explanations."""
         
+        return prompt
+
+    def _build_relic_correction_prompt(
+        self,
+        text: str,
+        available_relics: List[str]
+    ) -> str:
+        """Build the LLM prompt for relic-only name correction."""
+        prompt = f"""You are a Slay the Spire relic name matcher. The user spoke relic names via voice, which were transcribed and may contain speech-to-text errors.
+
+TRANSCRIBED TEXT:
+\"{text}\"
+
+AVAILABLE RELICS:
+{json.dumps(available_relics, indent=2)}
+
+RULES:
+1. Match ONLY against the available relic names above.
+2. Return the exact relic names from the list.
+3. Handle spacing and punctuation differences, including hyphens.
+4. Handle common speech-to-text mistakes and return every relic you can identify.
+5. Do not invent new names.
+6. Leave the cards list empty.
+
+EXAMPLES:
+- \"aka beko pen nib\" -> {{\"cards\": [], \"relics\": [\"Akabeko\", \"Pen Nib\"]}}
+- \"dead branch\" -> {{\"cards\": [], \"relics\": [\"Dead Branch\"]}}
+- \"oddly smooth stone\" -> {{\"cards\": [], \"relics\": [\"Oddly Smooth Stone\"]}}
+
+OUTPUT FORMAT (JSON only):
+{{
+  \"cards\": [],
+  \"relics\": [\"Exact Relic Name 1\", \"Exact Relic Name 2\"]
+}}
+
+Return ONLY valid JSON matching the format above. No explanations."""
+
         return prompt
     
     def _get_unmatched_words(
