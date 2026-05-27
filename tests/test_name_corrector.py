@@ -26,7 +26,7 @@ class TestNameCorrector:
             "Strike", "Defend", "Eruption", "Vigilance", "Battle Hymn"
         ]
         self.mock_kb.get_all_relics.return_value = [
-            "Pure Water", "Akabeko", "Pen Nib"
+            "Pure Water", "Akabeko", "Pen Nib", "Frozen Core", "Sozu", "Runic Dome"
         ]
         
         self.corrector = NameCorrector(knowledge_base=self.mock_kb)
@@ -320,6 +320,20 @@ class TestNameCorrector:
         assert relics == ["Akabeko", "Pen Nib"]
         self.mock_kb.get_all_relics.assert_called()
         self.mock_kb.get_choosable_cards_for_character.assert_not_called()
+
+    @patch.object(NameCorrector, '_try_models_with_fallback')
+    def test_correct_relic_names_phrase_fallback(self, mock_try_models):
+        """Relic phrase fallback should recover near-miss spoken phrases like Runic Dawn."""
+        mock_try_models.return_value = '{"cards": [], "relics": ["Frozen Core", "Sozu"]}'
+
+        self.mock_kb.get_relic_data.side_effect = lambda name: {"name": name} if name in [
+            "Frozen Core", "Sozu", "Runic Dome"
+        ] else None
+        self.mock_kb.get_card_data.return_value = None
+
+        relics = self.corrector.correct_relic_names("Frozen core, Sozu, Runic Dawn")
+
+        assert relics == ["Frozen Core", "Sozu", "Runic Dome"]
     
     # Edge cases
     @patch.object(NameCorrector, '_try_models_with_fallback')

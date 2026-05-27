@@ -9,6 +9,11 @@ from typing import Optional
 from src.knowledge.knowledge_base import KnowledgeBase
 
 
+RELIC_ID_ALIASES = {
+    "Cables": "Gold-Plated Cables",
+}
+
+
 def normalize_card_id(card_id: str, kb: Optional[KnowledgeBase] = None) -> str:
     """
     Normalize a card ID from save file to display name.
@@ -95,6 +100,10 @@ def normalize_relic_id(relic_id: str, kb: Optional[KnowledgeBase] = None) -> str
     if counter_match:
         counter = counter_match.group(1)
         base_relic = relic_id[:counter_match.start()]
+
+    aliased_relic = RELIC_ID_ALIASES.get(base_relic, base_relic)
+    if aliased_relic != base_relic:
+        return f"{aliased_relic} {counter}" if counter else aliased_relic
     
     # Split camelCase into words
     normalized = re.sub(r'(?<!^)(?=[A-Z])', ' ', base_relic)

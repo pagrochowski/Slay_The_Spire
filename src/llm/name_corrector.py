@@ -6,6 +6,7 @@ from voice transcription.
 """
 
 import json
+import re
 import threading
 from typing import List, Dict, Optional, Tuple
 from groq import Groq
@@ -248,10 +249,15 @@ class NameCorrector:
 
         if result is None:
             log.warning("Relic-only correction fell back to fuzzy matching")
+            relics = self._relic_phrase_fallback(
+                transcribed_text,
+                [],
+                available_relics
+            )
             _, relics = self._fuzzy_fallback(
                 transcribed_text,
                 [],
-                [],
+                relics,
                 [],
                 available_relics,
                 threshold=75
@@ -260,6 +266,11 @@ class NameCorrector:
             return relics
 
         _, relics = self._parse_correction_result(result)
+        relics = self._relic_phrase_fallback(
+            transcribed_text,
+            relics,
+            available_relics
+        )
         _, relics = self._fuzzy_fallback(
             transcribed_text,
             [],
@@ -277,6 +288,85 @@ class NameCorrector:
         })
 
         return relics
+
+    def _relic_phrase_fallback(
+        self,
+        transcribed_text: str,
+        matched_relics: List[str],
+        available_relics: List[str]
+    ) -> List[str]:
+        """Recover missed relics by matching comma-separated phrases token-by-token."""
+        fallback_relics = list(matched_relics)
+
+        for phrase in self._split_transcribed_phrases(transcribed_text):
+            best_match = self._find_best_relic_phrase_match(phrase, available_relics)
+            if best_match and best_match not in fallback_relics:
+                log.info(f"Phrase fallback (relic): '{phrase}' → '{best_match}'")
+                fallback_relics.append(best_match)
+
+        return fallback_relics
+
+    def _split_transcribed_phrases(self, transcribed_text: str) -> List[str]:
+        """Split a transcription into likely spoken item phrases."""
+        parts = re.split(r",|\band\b", transcribed_text, flags=re.IGNORECASE)
+        phrases = []
+
+        for part in parts:
+            cleaned = re.sub(r"[^A-Za-z0-9\-\s]", " ", part)
+            cleaned = re.sub(r"\s+", " ", cleaned).strip()
+            if cleaned:
+                phrases.append(cleaned)
+
+        return phrases
+
+    def _find_best_relic_phrase_match(
+        self,
+        phrase: str,
+        available_relics: List[str]
+    ) -> Optional[str]:
+        """Find the best relic for a spoken phrase using token-position similarity."""
+        phrase_tokens = self._tokenize_phrase(phrase)
+        if not phrase_tokens or not available_relics:
+            return None
+
+        best_match = None
+        best_score = 0.0
+
+        for relic_name in available_relics:
+            relic_tokens = self._tokenize_phrase(relic_name)
+            if not relic_tokens:
+                continue
+
+            full_score = fuzz.ratio(phrase.lower(), relic_name.lower())
+            token_sort_score = fuzz.token_sort_ratio(phrase.lower(), relic_name.lower())
+
+            prefix_bonus = 0.0
+            if phrase_tokens[0] == relic_tokens[0]:
+                prefix_bonus = 10.0
+
+            compared = min(len(phrase_tokens), len(relic_tokens))
+            position_score = 0.0
+            if compared > 0:
+                position_scores = [
+                    fuzz.ratio(phrase_tokens[index], relic_tokens[index])
+                    for index in range(compared)
+                ]
+                position_score = sum(position_scores) / compared
+
+            composite_score = max(full_score, token_sort_score, position_score + prefix_bonus)
+
+            if composite_score > best_score:
+                best_score = composite_score
+                best_match = relic_name
+
+        if best_match and best_score >= 70:
+            return best_match
+
+        return None
+
+    def _tokenize_phrase(self, phrase: str) -> List[str]:
+        """Normalize a spoken phrase into comparable lowercase tokens."""
+        return [token for token in re.split(r"[^A-Za-z0-9]+", phrase.lower()) if token]
     
     def _try_split_concatenated_words(
         self,

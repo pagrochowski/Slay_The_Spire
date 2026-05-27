@@ -7,6 +7,7 @@ Stores voice-recorded choices with floor tracking to prevent wiping on summary r
 import json
 from pathlib import Path
 from typing import Optional, List, Dict, Any
+from src.knowledge.knowledge_base import KnowledgeBase
 from src.utils.logger import setup_logger
 
 log = setup_logger("choice")
@@ -15,14 +16,16 @@ log = setup_logger("choice")
 class ChoicePersistence:
     """Manages persistent storage of voice-recorded choices."""
     
-    def __init__(self, choice_file: Path = None):
+    def __init__(self, choice_file: Path = None, knowledge_base: KnowledgeBase = None):
         """
         Initialize choice persistence.
         
         Args:
             choice_file: Path to JSON file storing choices (default: current_choice.json)
+            knowledge_base: Optional knowledge base for enriching choice text
         """
         self.choice_file = choice_file or Path("current_choice.json")
+        self.kb = knowledge_base or KnowledgeBase()
         log.info(f"ChoicePersistence initialized: {self.choice_file}")
     
     def load_choice(self) -> Optional[Dict[str, Any]]:
@@ -152,8 +155,14 @@ class ChoicePersistence:
         lines = []
         
         if relics:
-            relics_text = ", ".join(relics)
-            lines.append(f"Relics to choose from: {relics_text}")
+            lines.append("Relics to choose from:")
+            for relic_name in relics:
+                relic_data = self.kb.get_relic_data(relic_name)
+                description = relic_data.get("description", "") if relic_data else ""
+                if description:
+                    lines.append(f"- {relic_name}: {description}")
+                else:
+                    lines.append(f"- {relic_name}")
         
         if cards:
             cards_text = ", ".join(cards)
