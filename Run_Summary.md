@@ -3,40 +3,32 @@
 ## Run Information
 - **Character**: DEFECT
 - **Ascension**: 4
-- **Act**: 2
+- **Act**: 1
+- **Floor**: 6
 
 ## Current Status
-- **HP**: 56/75
-- **Gold**: 410
+- **HP**: 47/75
+- **Gold**: 27
 
-## Deck (19 cards)
-- Ball Lightning [1] (Attack): Deal 7 damage. Channel 1 Lightning.
-- Buffer [2] (Power): Prevent the next time you would lose HP.
-- Cold Snap [1] (Attack): Deal 6 damage. Channel 1 Frost.
-- Conserve Battery
+## Deck (17 cards)
 - Coolheaded [1] (Skill): Channel 1 Frost. Draw 1 card.
-- 4x Defend [1] (Skill): Gain 5 Block.
+- 3x Defend [1] (Skill): Gain 5 Block.
+- Defend+ [1] (Skill): Gain 8 Block.
+- Defragment [1] (Power): Gain 1 Focus.
 - Dualcast [1] (Skill): Evoke your next Orb twice.
+- Go for the Eyes [0] (Attack): Deal 3 damage. If the enemy intends to attack, apply 1 Weak.
 - Hologram [1] (Skill): Gain 3 Block. Put a card from your discard pile into your hand. Exhaust.
-- Reinforced Body [X] (Skill): Gain 7 Block X times.
-- Steam Power
+- Leap [1] (Skill): Gain 9 Block.
 - Streamline [2] (Attack): Deal 15 damage. Reduce this card's cost by 1 this combat.
-- 2x Strike [1] (Attack): Deal 6 damage.
-- Sunder+ [3] (Attack): Deal 32 damage. If this kills an enemy, gain [B] [B] [B].
-- Undo
-- Zap [1] (Skill): Channel 1 Lightning.
+- 4x Strike [1] (Attack): Deal 6 damage.
+- Sunder [3] (Attack): Deal 24 damage. If this kills an enemy, gain [B] [B] [B].
+- Zap+ [0] (Skill): Channel 1 Lightning.
 
 ## Relics
 - Cracked Core: At the start of each combat, Channel 1 Lightning.
-- Ancient Tea Set: Whenever you enter a Rest Site, start the next combat with [E] [E] .
-- Boot
-- Winged Greaves
-- Medical Kit: Unplayable Status cards can now be played. Whenever you play a Status card, Exhaust it.
-- Old Coin: Upon pickup, gain 300 Gold.
-- Inserter: Every 2 turns, gain 1 Orb slot.
 
 ## Potions
-- Strength Potion: Gain 2 Strength.
+- Energy Potion: Gain 2 Energy.
 - Potion Slot
 - Potion Slot
 
@@ -46,12 +38,10 @@
 - Sapphire: ✗
 
 ## Boss & Elites
-- **Current Boss**: Champ
+- **Current Boss**: The Guardian
 - **Elites defeated this act:** None
 
 **Current choice:**
-- Rebound [1] (Attack): Deal 9 damage. Put the next card you play this turn on top of your draw pile.
-- Reprogram [1] (Skill): Lose 2 Focus. Gain 1 Strength. Gain 1 Dexterity.
-- SKIP?
+As per screenshot
 
 ---

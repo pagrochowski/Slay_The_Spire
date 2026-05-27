@@ -229,6 +229,7 @@ class RunSummaryGenerator:
 - **Character**: {character}
 - **Ascension**: {ascension}
 - **Act**: {act}
+- **Floor**: {floor}
 
 ## Current Status
 - **HP**: {current_hp}/{max_hp}
@@ -254,14 +255,26 @@ class RunSummaryGenerator:
 
 """
         
-        # Add existing choice section or placeholder
-        if existing_choice:
-            summary += existing_choice + "\n\n"
-        else:
-            summary += """**Current choice:**
-- SKIP?
+        # Generate choice section with voice choices (always check for updates)
+        from src.choice.choice_persistence import ChoicePersistence
+        choice_persist = ChoicePersistence()
+        
+        # Check if we should clear old choice due to floor change
+        current_floor = run_data.get('floor', 0)
+        current_act = run_data.get('act', 1)
+        
+        if choice_persist.should_clear_choice(current_floor, current_act):
+            choice_persist.clear_choice()
+            log.info(f"Cleared old choice - floor changed to {current_act}/{current_floor}")
+        
+        # Get formatted voice choice text
+        voice_choice_text = choice_persist.format_choice_text()
+        
+        summary += "**Current choice:**\nAs per screenshot\n\n"
+        
+        if voice_choice_text:
+            summary += voice_choice_text + "\n\n"
 
-"""
         
         summary += "---\n"
         

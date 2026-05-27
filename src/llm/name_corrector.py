@@ -206,6 +206,10 @@ class NameCorrector:
             available_relics
         )
         
+        # Deduplicate lists while preserving order
+        cards = list(dict.fromkeys(cards))
+        relics = list(dict.fromkeys(relics))
+        
         log.info(f"Name correction complete")
         log_operation(log, "correct_names_complete", {
             "cards_found": len(cards),
