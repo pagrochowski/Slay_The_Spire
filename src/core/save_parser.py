@@ -21,6 +21,12 @@ log = setup_logger("parsing")
 
 class SaveParser:
     """Parser for Slay the Spire save files."""
+
+    BOTTLED_RELIC_FIELDS = {
+        "Bottled Flame": ("bottled_flame", "bottled_flame_upgrade"),
+        "Bottled Lightning": ("bottled_lightning", "bottled_lightning_upgrade"),
+        "Bottled Tornado": ("bottled_tornado", "bottled_tornado_upgrade"),
+    }
     
     def __init__(self):
         """Initialize the save parser."""
@@ -133,15 +139,23 @@ class SaveParser:
                 else:
                     deck_cards.append(str(card))
             
+            bottled_cards = self._extract_bottled_relic_cards(save_data)
+
             # Extract relics (handle both dict and string formats)
             relic_list = []
             relics = save_data.get("relics", [])
             for relic in relics:
                 if isinstance(relic, dict):
                     relic_id = relic.get("id", str(relic))
-                    relic_list.append(normalize_relic_id(relic_id))
+                    normalized_relic = normalize_relic_id(relic_id)
                 else:
-                    relic_list.append(normalize_relic_id(str(relic)))
+                    normalized_relic = normalize_relic_id(str(relic))
+
+                bottled_card = bottled_cards.get(normalized_relic)
+                if bottled_card:
+                    normalized_relic = f"{normalized_relic} [{bottled_card}]"
+
+                relic_list.append(normalized_relic)
             
             # Extract potions (handle both dict and string formats)
             potion_list = []
@@ -285,6 +299,24 @@ class SaveParser:
                 "current_room": "Unknown",
                 "seed": "Unknown"
             }
+
+    def _extract_bottled_relic_cards(self, save_data: Dict[str, Any]) -> Dict[str, str]:
+        """Extract bottled relic target cards from top-level save fields."""
+        bottled_cards = {}
+
+        for relic_name, (card_field, upgrade_field) in self.BOTTLED_RELIC_FIELDS.items():
+            card_id = save_data.get(card_field)
+            if not card_id:
+                continue
+
+            upgrades = int(save_data.get(upgrade_field, 0) or 0)
+            card_name = normalize_card_id(str(card_id))
+            if upgrades > 0:
+                card_name += "+" * upgrades
+
+            bottled_cards[relic_name] = card_name
+
+        return bottled_cards
     
     def save_to_json(self, run_data: Dict[str, Any], output_path: Path) -> bool:
         """

@@ -271,13 +271,15 @@ class NameCorrector:
             relics,
             available_relics
         )
-        _, relics = self._fuzzy_fallback(
-            transcribed_text,
-            [],
-            relics,
-            [],
-            available_relics
-        )
+
+        if not self._should_skip_phrase_level_relic_fuzzy_fallback(transcribed_text, relics):
+            _, relics = self._fuzzy_fallback(
+                transcribed_text,
+                [],
+                relics,
+                [],
+                available_relics
+            )
 
         relics = list(dict.fromkeys(relics))
 
@@ -306,9 +308,33 @@ class NameCorrector:
 
         return fallback_relics
 
+    def _should_skip_phrase_level_relic_fuzzy_fallback(
+        self,
+        transcribed_text: str,
+        matched_relics: List[str]
+    ) -> bool:
+        """Skip broad fuzzy relic matching when each spoken phrase already has a strong canonical match."""
+        phrases = self._split_transcribed_phrases(transcribed_text)
+        if not phrases or not matched_relics:
+            return False
+
+        for phrase in phrases:
+            phrase_tokens = self._tokenize_phrase(phrase)
+            best_match, score = self._find_best_relic_phrase_match_with_score(phrase, matched_relics)
+            if best_match is None:
+                return False
+
+            relic_tokens = self._tokenize_phrase(best_match)
+            if abs(len(phrase_tokens) - len(relic_tokens)) > 1:
+                return False
+            if score < 72:
+                return False
+
+        return True
+
     def _split_transcribed_phrases(self, transcribed_text: str) -> List[str]:
         """Split a transcription into likely spoken item phrases."""
-        parts = re.split(r",|\band\b", transcribed_text, flags=re.IGNORECASE)
+        parts = re.split(r",|[.!?;\n]+|\band\b", transcribed_text, flags=re.IGNORECASE)
         phrases = []
 
         for part in parts:
@@ -325,9 +351,21 @@ class NameCorrector:
         available_relics: List[str]
     ) -> Optional[str]:
         """Find the best relic for a spoken phrase using token-position similarity."""
+        best_match, best_score = self._find_best_relic_phrase_match_with_score(phrase, available_relics)
+        if best_match and best_score >= 70:
+            return best_match
+
+        return None
+
+    def _find_best_relic_phrase_match_with_score(
+        self,
+        phrase: str,
+        available_relics: List[str]
+    ) -> Tuple[Optional[str], float]:
+        """Find the best relic for a spoken phrase and return its composite score."""
         phrase_tokens = self._tokenize_phrase(phrase)
         if not phrase_tokens or not available_relics:
-            return None
+            return (None, 0.0)
 
         best_match = None
         best_score = 0.0
@@ -359,10 +397,7 @@ class NameCorrector:
                 best_score = composite_score
                 best_match = relic_name
 
-        if best_match and best_score >= 70:
-            return best_match
-
-        return None
+        return (best_match, best_score)
 
     def _tokenize_phrase(self, phrase: str) -> List[str]:
         """Normalize a spoken phrase into comparable lowercase tokens."""

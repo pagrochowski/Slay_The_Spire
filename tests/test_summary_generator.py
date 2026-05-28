@@ -98,6 +98,14 @@ class TestRunSummaryGenerator:
         assert ":" in formatted
         # Should have description
         assert len(formatted) > len("Akabeko: ")
+
+    def test_format_bottled_relic_with_description(self, generator):
+        """Test formatting a bottled relic with its captured card."""
+        formatted = generator._format_relic_with_description("Bottled Flame [Bowling Bash]")
+
+        assert "Bottled Flame" in formatted
+        assert "Bowling Bash" in formatted
+        assert ":" in formatted
     
     def test_format_relic_unknown(self, generator):
         """Test formatting an unknown relic."""
@@ -178,6 +186,23 @@ class TestRunSummaryGenerator:
         # Content should match
         file_content = output_path.read_text(encoding='utf-8')
         assert file_content == summary
+
+    def test_generate_summary_includes_current_choice_image_link(self, generator, mock_run_data, tmp_path):
+        """Test rendering only the current choice image filename."""
+        output_path = tmp_path / "test_summary.md"
+        image_path = tmp_path / "captures" / "20260527_watcher_a4_f1_001.png"
+        image_path.parent.mkdir(parents=True)
+        image_path.write_bytes(b"png")
+
+        summary = generator.generate_summary(
+            mock_run_data,
+            output_path=output_path,
+            current_choice_image=image_path,
+        )
+
+        assert "As per screenshot" not in summary
+        assert "20260527_watcher_a4_f1_001.png" in summary
+        assert "[20260527_watcher_a4_f1_001.png](captures/20260527_watcher_a4_f1_001.png)" not in summary
     
     def test_generate_summary_preserve_choice(self, generator, mock_run_data, tmp_path):
         """Test preserving existing choice section."""

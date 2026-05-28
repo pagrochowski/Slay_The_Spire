@@ -105,14 +105,21 @@ class RunSummaryGenerator:
         Returns:
             Formatted string: "RelicName (Counter: X): Description"
         """
-        # Extract counter if present (e.g., "Molten Egg 2" → "Molten Egg", counter=2)
+        # Extract bottled card metadata if present (e.g., "Bottled Flame [Bowling Bash]")
         import re
-        counter = None
+        bottled_card = None
         base_name = relic_name
+        bottled_match = re.search(r'\s+\[(.+)\]$', relic_name)
+        if bottled_match:
+            bottled_card = bottled_match.group(1)
+            base_name = relic_name[:bottled_match.start()]
+
+        # Extract counter if present (e.g., "Molten Egg 2" → "Molten Egg", counter=2)
+        counter = None
         counter_match = re.search(r'\s+(\d+)$', relic_name)
         if counter_match:
             counter = counter_match.group(1)
-            base_name = relic_name[:counter_match.start()]
+            base_name = base_name[:counter_match.start()]
         
         relic_data = self.kb.get_relic_data(base_name)
         
@@ -124,6 +131,8 @@ class RunSummaryGenerator:
         # Format with counter if present
         if counter:
             return f"{base_name} (Counter: {counter}): {description}"
+        if bottled_card:
+            return f"{base_name} ({bottled_card}): {description}"
         else:
             return f"{base_name}: {description}"
     
@@ -153,7 +162,13 @@ class RunSummaryGenerator:
         
         return f"{display_name}: {description}"
     
-    def generate_summary(self, run_data: Dict, output_path: Optional[Path] = None, preserve_choice: bool = True) -> str:
+    def generate_summary(
+        self,
+        run_data: Dict,
+        output_path: Optional[Path] = None,
+        preserve_choice: bool = True,
+        current_choice_image: Optional[Path] = None,
+    ) -> str:
         """
         Generate formatted run summary markdown.
         
@@ -161,6 +176,7 @@ class RunSummaryGenerator:
             run_data: Parsed run data from SaveParser
             output_path: Optional path to write summary file
             preserve_choice: If True and file exists, preserve existing "Current choice" section
+            current_choice_image: Optional screenshot path for the current choice prompt
             
         Returns:
             Formatted markdown string
@@ -270,10 +286,20 @@ class RunSummaryGenerator:
         # Get formatted voice choice text
         voice_choice_text = choice_persist.format_choice_text()
         
-        summary += "**Current choice:**\nAs per screenshot\n\n"
-        
-        if voice_choice_text:
-            summary += voice_choice_text + "\n\n"
+        if existing_choice:
+            summary += existing_choice + "\n\n"
+        else:
+            image_reference = "As per screenshot"
+            if current_choice_image is not None:
+                image_path = Path(current_choice_image)
+                image_reference = image_path.name
+
+            summary += f"**Current choice:**\n{image_reference}\n"
+
+            if voice_choice_text:
+                summary += "\n" + voice_choice_text + "\n"
+
+            summary += "\n- SKIP?\n\n"
 
         
         summary += "---\n"

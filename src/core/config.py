@@ -59,6 +59,9 @@ class Config:
     # ========== Backup Configuration ==========
     # Maximum age of backups in hours (older backups are deleted)
     BACKUP_MAX_AGE_HOURS = 24
+
+    # Maximum age of generated files in hours (matches log retention by default)
+    GENERATED_FILE_MAX_AGE_HOURS = 24 * 7
     
     # ========== Voice Recording Configuration ==========
     # Hotkey for voice recording

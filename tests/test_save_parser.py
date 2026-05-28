@@ -141,6 +141,24 @@ class TestSaveParser:
         assert run_data["ascension"] == 0
         assert run_data["act"] == 1
         assert run_data["gold"] == 0
+
+    def test_extract_run_data_bottled_relic_card(self, parser):
+        """Test that bottled relics include the captured card from save metadata."""
+        save_data = {
+            "ascension_level": 4,
+            "act_num": 1,
+            "floor_num": 12,
+            "cards": [{"id": "BowlingBash", "upgrades": 0}],
+            "relics": [{"id": "BottledFlame"}],
+            "potions": [],
+            "boss": "The Guardian",
+            "bottled_flame": "BowlingBash",
+            "bottled_flame_upgrade": 0,
+        }
+
+        run_data = parser.extract_run_data(save_data, save_filename="WATCHER.autosave")
+
+        assert "Bottled Flame [Bowling Bash]" in run_data["relics"]
     
     def test_extract_run_data_exception_handling(self, parser):
         """Test extraction with invalid data causing exception."""

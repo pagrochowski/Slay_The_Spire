@@ -334,6 +334,34 @@ class TestNameCorrector:
         relics = self.corrector.correct_relic_names("Frozen core, Sozu, Runic Dawn")
 
         assert relics == ["Frozen Core", "Sozu", "Runic Dome"]
+
+    @patch.object(NameCorrector, '_try_models_with_fallback')
+    def test_correct_relic_names_single_phrase_does_not_add_extra_stone_relic(self, mock_try_models):
+        """A strong single-phrase match like Wet stone should resolve to Whetstone only."""
+        mock_try_models.return_value = '{"cards": [], "relics": []}'
+        self.mock_kb.get_all_relics.return_value = [
+            "Whetstone",
+            "Darkstone Periapt",
+            "Sling of Courage",
+        ]
+
+        relics = self.corrector.correct_relic_names("Wet stone")
+
+        assert relics == ["Whetstone"]
+
+    @patch.object(NameCorrector, '_try_models_with_fallback')
+    def test_correct_relic_names_period_separated_phrases(self, mock_try_models):
+        """Period-separated relic phrases should each resolve without adding noisy stone matches."""
+        mock_try_models.return_value = '{"cards": [], "relics": ["Sling of Courage"]}'
+        self.mock_kb.get_all_relics.return_value = [
+            "Whetstone",
+            "Darkstone Periapt",
+            "Sling of Courage",
+        ]
+
+        relics = self.corrector.correct_relic_names("Wet stone. Sling of courage.")
+
+        assert relics == ["Sling of Courage", "Whetstone"]
     
     # Edge cases
     @patch.object(NameCorrector, '_try_models_with_fallback')

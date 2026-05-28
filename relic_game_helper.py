@@ -28,6 +28,7 @@ from spireslayer.editor import Editor
 from src.choice.choice_persistence import ChoicePersistence
 from src.core.backup_manager import BackupManager
 from src.core.config import Config
+from src.core.generated_file_manager import GeneratedFileManager
 from src.core.save_parser import SaveParser
 from src.knowledge.knowledge_base import KnowledgeBase
 from src.llm.name_corrector import NameCorrector
@@ -295,7 +296,7 @@ def get_current_run_data():
     return parser.extract_run_data(save_data, save_filename=Path(autosave_path).name)
 
 
-def refresh_run_summary(run_data=None) -> bool:
+def refresh_run_summary(run_data=None, current_choice_image: Path | None = None) -> bool:
     """Regenerate Run_Summary.md from the latest autosave."""
     try:
         if run_data is None:
@@ -309,6 +310,7 @@ def refresh_run_summary(run_data=None) -> bool:
             run_data,
             output_path=Config.RUN_SUMMARY_PATH,
             preserve_choice=False,
+            current_choice_image=current_choice_image,
         )
         return True
     except Exception as exc:
@@ -413,13 +415,13 @@ def handle_image_paste():
             screenshot = capture_visible_game_window(hwnd, previous_hwnd)
 
         run_data = get_current_run_data()
-        if refresh_run_summary(run_data=run_data):
+        image_path = save_capture_image(screenshot, run_data or {})
+        print(f"Saved screenshot: {image_path.name}")
+
+        if refresh_run_summary(run_data=run_data, current_choice_image=image_path):
             print("Run_Summary.md refreshed.")
         else:
             print("Using existing Run_Summary.md.")
-
-        image_path = save_capture_image(screenshot, run_data or {})
-        print(f"Saved screenshot: {image_path.name}")
 
         paste_capture_and_summary_files(image_path, Config.RUN_SUMMARY_PATH)
         print("Screenshot and summary files pasted.")
@@ -432,6 +434,7 @@ def handle_image_paste():
 def main():
     """Run the helper loop until ESC is pressed."""
     Config.create_directories()
+    deleted = GeneratedFileManager(Config.PROCESSED_DIR).cleanup_old_generated_files()
 
     print("=" * 60)
     print("Slay the Spire Relic Helper")
@@ -441,6 +444,8 @@ def main():
     print("ESC Exit")
     print()
     print("Keep the target LLM chat input focused before pressing F2.")
+    if deleted:
+        print(f"Cleaned up {deleted} old generated file(s).")
     print()
 
     try:
